@@ -13,3 +13,22 @@ logo: NodeRequire | undefined;
 this.logo = require("admin-lte/dist/img/AdminLTELogo.png");
 ```
 
+
+### lodash
+```
+_
+.chain(this.playingPanel.chess.tiles!.filter(x => x.group != undefined))
+.groupBy("group")
+.map((value, key) => value)
+.value()
+```
+
+### 使用 jquery
+讓 ts 看懂
+```
+npm install @types/jquery --save-dev
+```
+引用
+``` js
+import $ from 'jquery';
+```
