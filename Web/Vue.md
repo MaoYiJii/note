@@ -9,6 +9,7 @@ npm install -D @types/lodash
 npm install moment
 npm install vue-i18n@9
 npm install sweetalert2
+npm install vue3-table-lite
 
 dotnet tool install --global dotnet-ef
 dotnet ef migrations add InitialCreate --output-dir "Data\Migrations"
@@ -16,9 +17,27 @@ dotnet ef database update
 
 
 
+
+
+
 ## Vue3
 
+向下傳遞 slot
+``` 
+<template v-for="(slot, index) of Object.keys($slots)" :key="index" v-slot:[slot]>
+    <slot :name="slot"></slot>
+</template>
+```
+
+
 [使用 i18n](https://muki.tw/tech/vue/typescript-vue3-vue-i18n/)
+
+
+[Bootstrap 5](https://bootstrap5.hexschool.com/docs/5.1/getting-started/introduction/)
+[Bootstrap Icons](https://icons.getbootstrap.com/icons/plus/)
+
+
+[Vue3 Table Lite](https://vue3-lite-table.vercel.app/quick-start)
 
 
 
