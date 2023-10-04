@@ -15,7 +15,63 @@ dotnet tool install --global dotnet-ef
 dotnet ef migrations add InitialCreate --output-dir "Data\Migrations"
 dotnet ef database update
 
+dotnet ef migrations add 001
 
+
+Vue2 完全攻略 (1) 為什麼使用前端框架
+
+## 改變資料就能更新畫面
+
+在傳統 HTML 的時代，會需要自行維護資料與畫面呈現的一致性
+以基本的計數器功能範例如下，當計算完 count 之後需要再找到顯示 count 的元素自行更新
+``` html
+<div>
+    <div>
+        count: <span id="count">0</span>
+    </div>
+    <div>
+        <button onclick="increment">increment</button>
+    </div>
+</div>
+<script>
+    var count = 0;
+    function increment() {
+        count++;
+        document.getElementById('count').innerText = String(count);
+    }
+</script>
+```
+
+套用了 Vue 之後，只要設定好資料顯示在哪裡，方法怎麼被調用
+在方法中只需要專注在資料處理上，畫面就會依照資料自動更新了
+``` html
+<div id="app">
+    <div>
+        count: {{count}}
+    </div>
+    <div>
+        <button v-on:click="increment">increment</button>
+    </div>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            count: 0;
+        },
+        methods: {
+            increment: function() {
+                this.count++;
+            }
+        }
+    });
+</script>
+```
+
+而且在閱讀上也會變得更直覺
+
+
+Vue2 完全攻略 (2) Vue 的基本操作
 
 
 
@@ -165,5 +221,52 @@ pushModal(el: Element, options?: Partial<bootstrap.Modal.Options>) {
       this.onModalHidden(resolve, event);
     });
   });
+}
+```
+
+## Vue2 到 Vue3
+
+Mixins --> Composition API
+[1](https://www.tpisoftware.com/tpu/articleDetails/2459)
+[2](https://ithelp.ithome.com.tw/articles/10250319)
+
+https://chupai.github.io/posts/2104/compositionapi/
+https://www.letswrite.tw/vue3-composition-api/
+
+vue render jsx
+
+JSX
+``` js
+export default {
+    props: {
+        name: {
+            type: String
+        }
+    },
+    data(vm) {
+        return {
+            count: 0
+        };
+    },
+    methods: {
+        add() {
+            this.count++;
+        }
+    },
+    render(createElement) {
+        return (
+            <div>
+                <div>
+                    Hello {this.name}
+                </div>
+                <div>
+                    Count: {this.count}
+                </div>
+                <div>
+                    <button type="button" onclick={this.add}>Add</button>
+                </div>
+            </div>
+        )
+    }
 }
 ```
