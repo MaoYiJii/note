@@ -65,11 +65,8 @@
     <script type="text/javascript">
         var vm;
         function onReady() {
-            if (window.parent != window) {
+            if (window.parent != window && typeof window.parent.reset == 'function') {
                 window.parent.reset();
-                //setTimeout(function () {
-                //    window.parent.location.href = location.href;
-                //}, 500);
                 return;
             }
             Vue.component("link-node", {
@@ -121,28 +118,7 @@
                 el: '#app',
                 data: function () {
                     return {
-                        links: [
-                            {
-                                text: 'C#',
-                                children: [
-                                    {
-                                        text: 'Assembly',
-                                        href: 'C%23/Assembly'
-                                    }, {
-                                        text: 'CodeAnalysis',
-                                        href: 'C%23/CodeAnalysis'
-                                    }
-                                ]
-                            }, {
-                                text: 'Git',
-                                children: [
-                                    {
-                                        text: 'General',
-                                        href: 'Git/General'
-                                    }
-                                ]
-                            }
-                        ],
+                        links: [{"text":"C#","children":[{"text":"ASP.NET","children":[{"text":"Dependency Injection","href":"C%23/ASP.NET/Dependency+Injection"}]},{"text":"ASP.NET Core","children":[{"text":"General","href":"C%23/ASP.NET+Core/General"},{"text":"Identity (Cookie + EFCore)","href":"C%23/ASP.NET+Core/Identity+(Cookie+%2B+EFCore)"},{"text":"Identity (JWT + EFCore)","href":"C%23/ASP.NET+Core/Identity+(JWT+%2B+EFCore)"},{"text":"Identity (JWT)","href":"C%23/ASP.NET+Core/Identity+(JWT)"},{"text":"RazorPage","href":"C%23/ASP.NET+Core/RazorPage"},{"text":"System.Text.Json","href":"C%23/ASP.NET+Core/System.Text.Json"}]},{"text":"WPF","children":[{"text":"General","href":"C%23/WPF/General"}]},{"text":"Assembly","href":"C%23/Assembly"},{"text":"CodeAnalysis","href":"C%23/CodeAnalysis"},{"text":"General","href":"C%23/General"},{"text":"NewtonsoftJson","href":"C%23/NewtonsoftJson"},{"text":"Reflection","href":"C%23/Reflection"},{"text":"Regex","href":"C%23/Regex"},{"text":"Security","href":"C%23/Security"},{"text":"SignalR","href":"C%23/SignalR"},{"text":"StackTrace","href":"C%23/StackTrace"},{"text":"UnitTest","href":"C%23/UnitTest"}]},{"text":"Git","children":[{"text":"General","href":"Git/General"}]},{"text":"Java","children":[{"text":"General","href":"Java/General"}]},{"text":"Regex","children":[{"text":"General","href":"Regex/General"}]},{"text":"SQL","children":[{"text":"General","href":"SQL/General"}]},{"text":"Web","children":[{"text":"Vue2","children":[{"text":"ClassBindings","href":"Web/Vue2/ClassBindings"},{"text":"Component","href":"Web/Vue2/Component"}]},{"text":"Vue2+TS","children":[{"text":"General","href":"Web/Vue2%2BTS/General"}]},{"text":"AdminLTE2","href":"Web/AdminLTE2"},{"text":"AdminLTE3","href":"Web/AdminLTE3"},{"text":"Bootstrap4","href":"Web/Bootstrap4"},{"text":"BootstrapTable","href":"Web/BootstrapTable"},{"text":"Javascript","href":"Web/Javascript"},{"text":"JQuery","href":"Web/JQuery"},{"text":"Select2","href":"Web/Select2"},{"text":"Vue","href":"Web/Vue"}]}],
                         src: ""
                     };
                 }
