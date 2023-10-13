@@ -51,19 +51,25 @@
         <ul>
             <li>
                 <div>
-                    <a href="javascript: void(0);" v-on:click="toggle('C#')">C#</a>
+                    <a href="javascript: void(0);" @click="toggle('C#')">
+                        <i class="fas fa-chevron-right" :class="isExpand('C#') ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                        <span>C#</span>
+                    </a>
                 </div>
                 <ul v-show="isExpand('C#')">
-                    <li><a href="/C%23/Assembly">Assembly</a></li>
-                    <li><a href="/C%23/CodeAnalysis">CodeAnalysis</a></li>
+                    <li><a href="/note/C%23/Assembly">Assembly</a></li>
+                    <li><a href="/note/C%23/CodeAnalysis">CodeAnalysis</a></li>
                 </ul>
             </li>
             <li>
                 <div>
-                    <a href="javascript: void(0);" v-on:click="toggle('Git')">Git</a>
+                    <a href="javascript: void(0);" @click="toggle('Git')">
+                        <i class="fas fa-chevron-right" :class="isExpand('Git') ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                        <span>Git</span>
+                    </a>
                 </div>
                 <ul v-show="isExpand('Git')">
-                    <li><a href="/Git/General">General</a></li>
+                    <li><a href="/note/Git/General">General</a></li>
                 </ul>
             </li>
         </ul>
