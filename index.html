@@ -63,11 +63,13 @@
     </script>
     
     <script type="text/javascript">
+        var vm;
         function onReady() {
             if (window.parent != window) {
-                setTimeout(function () {
-                    window.parent.location.href = location.href;
-                }, 500);
+                window.parent.reset();
+                //setTimeout(function () {
+                //    window.parent.location.href = location.href;
+                //}, 500);
                 return;
             }
             Vue.component("link-node", {
@@ -115,7 +117,7 @@
                     }
                 }
             });
-            new Vue({
+            vm = new Vue({
                 el: '#app',
                 data: function () {
                     return {
@@ -145,6 +147,9 @@
                     };
                 }
             });
+        }
+        function reset() {
+            vm.src = "";
         }
         document.addEventListener('DOMContentLoaded', onReady);
     </script>
