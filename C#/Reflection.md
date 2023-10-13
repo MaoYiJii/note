@@ -37,3 +37,10 @@ public string GetPropertyName<T>(Expression<Func<T, object>> expression)
     return null;
 }
 ```
+
+### 以 explicit 轉換類型
+``` cs
+// 如果沒有對應的 explicit 會擲回 InvalidOperationException
+var explicitMethod = Expression.Convert(Expression.Parameter(value.GetType(), null), type).Method;
+return explicitMethod.Invoke(null, new object[] { value });
+```

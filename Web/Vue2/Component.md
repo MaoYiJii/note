@@ -181,3 +181,6 @@ Vue.component("counter", {
     ...
 });
 ```
+
+### 可變動的參數
+

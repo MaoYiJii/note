@@ -50,7 +50,7 @@ Vue 的 class binding 可以放 `字串` `物件` `陣列` 三種型態
 <div :class="[{ class1: true }, ['class2']]"></div>
 ```
 
-## 結合來源
+## 合併來源
 
 如果有一個固定的 class 可以將 `class` 與 `:class` 同時使用
 ``` vue
