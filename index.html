@@ -7,18 +7,84 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <style type="text/css">
+        .pl-18px {
+            padding-left: 18px;
+        }
+        
+        .ml-6px {
+            margin-left: 6px;
+        }
+        
+        .mt-0 {
+            margin-top: 0;
+        }
+        
+        .mb-15px {
+            margin-bottom: 15px;
+        }
+        
+        .my-3px {
+            margin-top: 3px;
+            margin-bottom: 3px;
+        }
+        
+        .toggle {
+            cursor: pointer;
+            font-weight: 900;
+            color: cadetblue;
+        }
+    </style>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js" integrity="sha512-BAMfk70VjqBkBIyo9UTRLl3TBJ3M0c6uyy2VMUrq370bWs7kchLNN9j1WiJQus9JAJVqcriIUX859JOm12LWtw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script type="text/x-template" id="linkNode">
+        <ul class="mt-0 pl-18px">
+            <template v-for="link in links">
+                <template v-if="Array.isArray(link.children)">
+                    <li class="mb-15px">
+                        <div class="toggle" @click="toggle(link.text)">
+                            <span>{{link.text}}</span>
+                            <i class="ml-6px fas" :class="isExpand(link.text) ? 'fa-chevron-down' : 'fa-chevron-left'"></i>
+                        </div>
+                        <template v-if="isExpand(link.text)">
+                            <link-node :path-base="toPath(link.text)" :links="link.children"></link-node>
+                        </template>
+                    </li>
+                </template>
+                <template v-else>
+                    <li class="my-3px">
+                        <a href="javascript: void(0);" @click="to(link.href)">{{link.text}}</a>
+                    </li>
+                </template>
+            </template>
+        </ul>
+    </script>
     
     <script type="text/javascript">
         function onReady() {
-            new Vue({
-                el: "#app",
-                data: function () {
+            Vue.component("link-node", {
+                template: "#linkNode",
+                props: {
+                    pathBase: String,
+                    links: Array
+                },
+                data: function (vm) {
                     return {
                         expandItems: []
                     };
                 },
                 methods: {
+                    to: function (src) {
+                        this.$root.src = 'https://maoyijii.github.io/note/' + src;
+                    },
+                    toPath: function (name) {
+                        if (this.pathBase) {
+                            return this.pathBase + '/' + name;
+                        }
+                        return name;
+                    },
                     isExpand: function (item) {
                         return this.expandItems.includes(item);
                     },
@@ -43,37 +109,46 @@
                     }
                 }
             });
+            new Vue({
+                el: '#app',
+                data: function () {
+                    return {
+                        links: [
+                            {
+                                text: 'C#',
+                                children: [
+                                    {
+                                        text: 'Assembly',
+                                        href: 'C%23/Assembly'
+                                    }, {
+                                        text: 'CodeAnalysis',
+                                        href: 'C%23/CodeAnalysis'
+                                    }
+                                ]
+                            }, {
+                                text: 'Git',
+                                children: [
+                                    {
+                                        text: 'General',
+                                        href: 'Git/General'
+                                    }
+                                ]
+                            }
+                        ],
+                        src: ""
+                    };
+                }
+            });
         }
-        document.addEventListener("DOMContentLoaded", onReady);
+        document.addEventListener('DOMContentLoaded', onReady);
     </script>
 </head>
 <body>
     <div id="app">
-        <ul>
-            <li>
-                <div>
-                    <a href="javascript: void(0);" @click="toggle('C#')">
-                        <i class="fas fa-chevron-right" :class="isExpand('C#') ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
-                        <span>C#</span>
-                    </a>
-                </div>
-                <ul v-show="isExpand('C#')">
-                    <li><a href="/note/C%23/Assembly">Assembly</a></li>
-                    <li><a href="/note/C%23/CodeAnalysis">CodeAnalysis</a></li>
-                </ul>
-            </li>
-            <li>
-                <div>
-                    <a href="javascript: void(0);" @click="toggle('Git')">
-                        <i class="fas fa-chevron-right" :class="isExpand('Git') ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
-                        <span>Git</span>
-                    </a>
-                </div>
-                <ul v-show="isExpand('Git')">
-                    <li><a href="/note/Git/General">General</a></li>
-                </ul>
-            </li>
-        </ul>
+        <div style="display: flex;">
+            <link-node :links="links"></link-node>
+            <iframe v-if="src" :src="src" class="ml-6px" style="flex-grow: 1; height: calc(100vh - 20px);"></iframe>
+        </div>
     </div>
 </body>
 </html>
