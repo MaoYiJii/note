@@ -1,0 +1,2365 @@
+3/23
+    1. 整理電腦環境
+    2. HRMVC_Template 更改專案名稱、本機站台架設
+    3. 了解 CAP 與 FLM 機制
+
+3/24
+    改寫 http://tw100101084.corpnet.auo.com/rps/WebForm/Home.aspx
+
+    DB
+        autchrsqltest1
+        urps
+        rpspwd
+        
+        sa
+        hris@c1
+
+    RPS 改版 時程
+        功能	        畫面預估工時	功能預估工時      實際開發工時
+        新增公文	    0.5	            2                      2            發送信件
+        重新指派	    0.5	            1                      1.5          用 BootstrapTable 開發
+        簽收處理	    0.5	            1                      0.5
+        查詢	        0.5	            1                      0.5
+        文號申請	    0.5	            1
+        處理結案	    0.5	            1
+        查詢	        0.5	            1
+        角色維護        0.5             0.5                    0.5
+        廠區維護        0.5             0.5                    1
+        廠區管理者維護	0.5	            1                      1            參考 D:\KaiHuangAres\Workspace\Reference\Occupancy\OMS.WebMVC\Views\Setting\RoleSetting.cshtml
+        首頁維護	    0.5	            1
+        模擬身分	    0.5	            1
+        系統錯誤記錄	0.5	            0.5
+        CAP/FLM 機制		            2
+        選擇人員的元件		            1
+        調整資料結構		            2
+
+3/25
+    頁面文字
+        收文編號 DocNo
+        所屬廠區 DocFac
+        建檔者 Creator
+        建檔日期 CreateDate
+        來文單位 DocFrom
+        受文者 OutOrg
+        發文日期 OutDate
+        發文字號 OutNo
+        速別 Emergent
+        附件 HasFile
+        備註 Remark
+        主旨 Subject
+        收文者 Receiver
+        電子檔 File
+
+        操作 Func
+        序號 SerialNo
+        收文編號 DocNo
+        收文單位 ReceiveOrg
+        收文者 Receiver
+        發文日期 OutDate
+        來文單位 DocFrom
+        狀態 State
+
+        Dev 更新
+        DB 依照名稱排序
+        Razor 結果 TrimStart 只對換行
+
+收文/新增公文: 來文單位套用 select2
+收文/重新指派: 列表資料以 bootstrapTable 顯示
+
+3/26
+    // 來文單位
+    select distinct out_org from rps_main where out_org like '%" + keyWord + "%'
+    // 所屬廠區
+    select profile_code, code_value from Profile_c where active='Y' and profile_type=@profile_type -- @profile_type = 1
+    // 受文者
+    select profile_code, code_value from Profile_c where active='Y' and profile_type=@profile_type -- @profile_type = 2
+    // 收文者
+    select RTRIM(eng_name) as eng_name, emp_name, logonid, emp_no, org_id, ext_no, e_mail from emp_data where active='Y' and (emp_no + ';' + emp_name + ';' +eng_name+ ';' +org_id) like '%" + keyWord + "%'
+    
+// 密件 收文者
+-- @role_id = 3
+select distinct emp_no from RoleAuthSite_r a inner join Role_r b 
+ on a.role_id=b.role_id 
+ where a.role_id=@role_id and a.active='Y' and b.active='Y' and a.site like @site
+ // 從 emp_no 帶出完整資料
+ SELECT org_id, ext_no, e_mail,RTRIM(eng_name) as eng_name,emp_no, emp_name, site, sex, logonid FROM emp_data WHERE emp_no = @emp_no AND active = 'Y'
+    
+    頁面文字
+        密件 Secret
+        公文派發 ReceiveTitle
+        收文者單位資料 ReceiverOrgData
+        收文單位 ReceiveOrg
+        受文者 Receiver2
+        輸入者 Creator2
+        輸入日期 CreateDate2
+        狀態 State
+        
+3/29
+    收文 - 新增公文
+        看一下收文者單位資料狀態的來源
+        檔案上傳功能
+        資料儲存 (建立對應 pass_main 資料表)
+        發送信件
+    收文 - 重新指派
+        pass_main.receiver 不再記錄 eng_name
+        table 欄位
+        明細頁
+        重新指派功能
+        撤回功能
+
+3/30
+    收文 - 重新指派
+        把 char 改 varchar
+        補上明細頁的多國語
+        簽核記錄
+        撤回, 重新指派功能
+        畫面顯示的簽核者及建檔者 join 出 logonid
+        
+    撤回
+        Read_Auth reader = new Read_Auth();
+        reader.rps_no = rps_no;
+        reader.app_date = DateTime.Now;
+        reader.auth_date = DateTime.Now;
+        reader.reason = tbRollBack.Text.Trim();
+        reader.action = "撤回";
+        reader.auth_to = Request.Cookies["logonid"].Value;
+        model.AddToRead_Auth(reader);
+
+        Rps_main main = model.rps_main.First(i => i.rps_no == rps_no);
+        main.sta = "3";
+    重新指派
+        Read_Auth new_reader = new Read_Auth();
+        new_reader.rps_no = rps_no;
+        new_reader.auth_to = tempInfo[0];
+        new_reader.auth_date = DateTime.Now;
+        model.AddToRead_Auth(new_reader);
+
+        //修改表單狀態
+        Rps_main main = model.rps_main.First(i => i.rps_no == rps_no);
+        main.sta = "0";
+
+        //修改當前收件者
+        Pass_main pm = model.pass_main.First(i => i.scc_no == rps_no);
+        pm.receiver = tempInfo[0];
+        
+    檔案下載
+        string pageUrl = WebConfigurationManager.AppSettings["fileGet"];
+        //文件獲取頁面地址(測試區)
+        string sysID = WebConfigurationManager.AppSettings["sysID"];        //系統ID[必選]，新系統申請時固定分配
+        string bizID = rps_no;        //業務ID[可選]，由AP系統生成，用於管理一組文件，可根據其獲取文件List
+        string action = WebConfigurationManager.AppSettings["action"];      //操作類型Action[必選]，VDTMPF的字符組合
+        string empNo = Request.Cookies["emp_no"].Value;                     //操作者工號[必選]
+        string language = WebConfigurationManager.AppSettings["language"];  //頁面顯示語言[必選]，en / zh-CHS / zh-CHT
+
+        string orignQueryString = "sys_id=" + sysID + "&biz_id=" + bizID + "&action=" + action + "&emp_no=" + empNo + "&language=" + language;
+        string url = pageUrl + SecurityHelper.Encrypt(orignQueryString, true);
+        
+3/31
+    Update:
+    收文/新增公文: 實作資料儲存功能
+    收文/簽收處理: 功能畫面與列表資料顯示
+    
+4/1
+    Query Normal
+        select a.rps_no, a.in_no, a.create_by, b.pass_no, b.receiver, a.out_org, b.s_date, convert(nvarchar,a.out_date,111) as 'out_date'
+        from dbo.rps_main a inner join dbo.pass_main b on a.rps_no=b.scc_no
+        inner join Read_Auth c on a.rps_no=c.rps_no 
+        where 1=1 
+        and a.in_no=@in_no
+        and a.sta=@sta
+        and a.out_org=@out_org
+        and a.out_no like '%" + out_no + "%'
+        and b.s_date between @ReceiveDateFrom and @ReceiveDateTo
+        and a.out_date between @deliverDateFrom and @deliverDateTo
+        and a.receiver_site in ("+receiver_site+")
+        and c.auth_to =@auth_to
+        order by a.create_date desc
+        
+    Query Admin
+        select a.rps_no,a.in_no, a.create_by, b.pass_no, b.receiver, a.out_org, convert(nvarchar,a.out_date,111) as 'out_date' 
+        from dbo.rps_main a inner join dbo.pass_main b on a.rps_no=b.scc_no
+        where 1=1
+        
+    Test Case
+    
+4/2
+    把本機公文系統架起來
+    發 mail 給 vickey 網址及登入的管理者
+    
+4/6
+    Update:
+    收文/查詢: 加上搜尋條件的清除按鈕
+    維護作業/廠區管理者維護: 功能畫面與列表資料顯示
+
+    Update:
+    維護作業/廠區管理者維護: 實作新增、修改、刪除功能
+    維護作業/角色維護: 功能畫面與列表資料顯示
+
+4/7
+    畫 table
+    測試報告+SQL
+    改測試回饋
+        emp_data 改 emp_data_all
+        org_id 另存 ORGID
+        必填欄位加 *
+        日期欄位加日曆
+        RPSCodeMap 加多語系
+        RPSCodeMap 加上下層關聯性
+        加一個 table 記錄 org id 的資料變更
+        
+    調整資料結構 1.5/4
+
+4/8
+
+4/9
+    廠區維護 加所屬單位 0.5
+
+    Update:
+    收文/新增公文: 所屬廠區選單項目隨廠區維護的可用單位變動，備註加上顯示當前字數
+    維護作業/廠區維護: 實作可用單位欄位
+
+    Update:
+    發文/文號申請: 功能畫面，實作儲存功能
+    發文/處理結案: 功能畫面與列表資料顯示
+    
+4/12
+    修正發文字號套用 [Profile_c].[doc_prefix]
+        case when d.profile_code='3' then 
+        e.doc_prefix+                  '字第'+rtrim(a.auotimes)+'號' else 
+        e.doc_prefix+'('+d.code_value+')字第'+rtrim(a.auotimes)+'號' end
+
+    Update:
+    發文/處理結案: 實作明細頁面與檔案上傳連結、結案、取消發文功能
+    發文/查詢: 功能畫面與列表資料顯示及查詢條件過濾邏輯
+
+    Update:
+    發文/查詢: 修正發文字號的顯示邏輯，加入附件下載連結
+    維護作業/公司維護: 功能畫面與列表資料顯示及新增、修改、刪除功能
+    維護作業/首頁維護: 加入 CKEditor 來存取 HTML
+    首頁: 讀出首頁維護的儲存內容，加入下載 doc 檔的按鈕
+    
+4/13
+    把來文單位改 server 端搜尋
+    把受文單位改 server 端搜尋
+    重新指派要改 org_id
+    廠區全部加必填檢查
+    收文詳細資料版面調整
+    
+    可執行
+        1.收文/查詢 「來文單位」可以關鍵字查詢，新增「收文單位」、「收文者」、「主旨」、「狀態」搜尋條件，且可以關鍵字查詢
+        2.收文/重新指派 撤回或駁回的項目可以編輯內容後再重新指派
+        3.收文/新增公文 增加主旨的可以填寫長度
+        6.加入追蹤列表於選單，於查詢頁加入追蹤按鈕功能
+    須確認
+        4.目前系統測試不到"撤回後用原本的文號會查不到"的情境
+        5.b.如何取得上一級主管或秘書
+          d.須提供 email 寄送內容
+        7.系統需要做什麼事情
+        
+    Update:
+    維護作業/模擬身分: 實作模擬身分功能
+    維護作業/系統錯誤記錄: 啟用 elmah 機制
+    
+4/14
+    Update:
+    收文/重新指派: 重新設計詳細資料的畫面，加上修改與刪除功能
+
+    Update:
+    收文/簽收處理: 重新設計詳細資料與簽收區塊的畫面
+    收文/查詢: 重新設計詳細資料的畫面
+    發文/文號申請: 調整受文單位資料來源搜尋模式
+
+4/15
+    角色維護、廠區維護，多國語及時更新
+    代碼被使用無法刪除
+    權限管理處理上層打勾的邏輯
+
+    Update:
+    收文/簽收處理: 於簽收區塊加入郵件發送欄位
+    收文/查詢: 加入郵件發送的查詢條件
+    維護作業/角色維護: 優化選單權限 TreeView 的 UX
+    
+    Update:
+    收文/新增公文: 加入發送信件通知功能
+    收文/簽收處理: 加入發送信件通知功能
+    發文/文號申請: 加入發送信件通知功能
+    維護作業/角色維護: 加入代碼是否可以被刪除的判斷
+    維護作業/廠區維護: 加入代碼是否可以被刪除的判斷
+    維護作業/公司維護: 加入代碼是否可以被刪除的判斷
+
+4/16
+    多國語維護 TW, CN, EN
+    RPSDocument.[emergent], RPSDocumentApprove.[approve_action] 改為代碼記錄
+    
+    Update:
+    合併收文用的 BusinessLogic
+    維護作業/多國語維護: 列表資料顯示與新增、修改、刪除功能
+
+    Update:
+    收文/重新指派: 新增「狀態」搜尋條件，加入重新指派的簽核記錄
+    收文/簽收處理: 加入廠區主管「簽收」、「駁回」、「轉簽」的功能與簽核記錄，從列表隱藏駁回給建立者的文件
+    維護作業/多國語維護: 新增「清除」按鈕，調整畫面排版
+    
+4/20
+    新增公文通知信的CC要給所有的廠區管理者
+    table 樣式調整 (themes-blue)
+    dialog 打開的寬度
+    日期元件 icon
+    發文類別
+    
+4/21
+    OSIS_DL
+        把功能 (menu) 列出來
+        整理一下 table 跟 SAP
+        資料庫 OSIS_DL
+        API 透過 Server 端連
+        
+        舊系統選單
+            查詢新資/獎金
+            查詢其他
+                保費證明
+                扣繳憑單
+            系統管理
+                權限設定
+                重設密碼與解鎖
+                參數設定
+                    功能設定
+                    公司章維護
+                薪資袋留言
+                外派津貼匯入
+                資料匯入
+                保費證明扣繳憑單權限設定
+                
+        規模
+            46 個 class (table?)
+            21 個 aspx
+            14 個功能選單
+            
+    OSIS 改版 時程
+        功能	                                預估工時
+        Layout 設計	                                1
+        首頁/電腦版	                                1
+        首頁/手機版	                                0.5
+        各期薪資/查詢	                            3
+        各期薪資/列印	                            2
+        各期薪資/手機排版	                        1.5
+        扣繳憑單/查詢	                            2.5
+        扣繳憑單/列印	                            1
+        扣繳憑單/手機排版	                        1
+        保費證明/查詢	                            2.5
+        保費證明/列印	                            1
+        保費證明/手機排版	                        1
+        常見問題	                                0.5
+        管理者功能/最新消息維護	                    0.5
+        管理者功能/聯絡窗口維護	                    0.5
+        管理者功能/常見問題維護	                    0.5
+        管理者功能/權限設定	                        2
+        管理者功能/參數設定	                        1
+        管理者功能/多國語維護	                    1
+        管理者功能/薪資袋留言	                    0.5
+        管理者功能/外派津貼匯入	                    1
+        管理者功能/保費證明匯入	                    1
+        管理者功能/扣繳憑單匯入	                    1
+        管理者功能/每月薪資單開放查詢日期設定	    0.5
+        管理者功能/模擬身分	                        0.5
+        聯絡窗口	                                0.5
+        調整資料結構	                            3
+
+        https://au3hr2.corpnet.auo.com/OSIS_TEST/Startup.aspx
+
+        assurance 開頭 保費
+        deduct 開頭 扣繳憑單
+        expatriation_allowance 外派經驗
+        
+        首頁      Home
+        各期薪資    Salary
+        扣繳憑單    Deduct
+        保費證明    Assurance
+        常見問題    Problem
+        管理者功能               Manager
+            最新消息維護                      News
+            聯絡窗口維護                      Contact
+            常見問題維護                      Problem
+            權限設定                          Role
+            參數設定                          Parameter
+            多國語維護                        Multilingual
+            薪資袋留言                        SalaryMessage
+            外派津貼匯入                      ImportExpatriateAllowance
+            保費證明匯入                      ImportAssurance
+            扣繳憑單匯入                      ImportDeduct
+            每月薪資單開放查詢日期設定        SalarySearchOpen
+            模擬身分                          Simulate
+        聯絡窗口                              Contact
+            
+4/26
+    移除變更密碼功能 (交給 CAP)
+    帳號登入改用 CAP
+    薪資查詢
+        分 DL 與 IDL
+    最新消息分不同的使用者顯示
+    Menu 分不同的使用者顯示
+    薪資單的 Note 要有多國語的輸入 (資料不是從 SAP)
+    
+    薪資月份是固定用發薪日的上一個月嗎
+    班別怎麼抓
+    薪資下方的項目怎麼組合出來的，寫固定嗎
+    休假資料怎麼對應月份
+    加班費用怎麼計算
+    
+    SVN 不能登入了
+        maggiewu
+        u.3286abc
+    
+4/27
+    薪資查詢
+        加班費與非加班費的總合自己算嗎
+        
+    扣繳憑單
+        類別按鈕的文字怎麼來
+        原資料表的加密欄位還是保持儲存加密的結果嗎, 加密方式有要變更嗎
+        什麼情況會顯示第一聯
+        扣繳憑單是否需要多國語
+        
+    模擬 0509256
+    
+    ARS 架構?
+    
+5/3
+    眷屬
+    SELECT emp_no , transfer_id , company_logoid , family_name , family_idcard ,
+	dbo.udf_format_date_to_string(family_birthday) AS family_birthday ,
+	dbo.udf_format_date_to_string(begin_date) AS begin_date ,
+	dbo.udf_format_date_to_string(end_date) AS end_date
+	FROM dbo.assurancedetail
+	WHERE emp_no = @emp_no
+	AND transfer_id = @transfer_id
+	AND company_logoid = @company_logoid
+	ORDER BY family_name
+        
+5/4
+    保費證明
+        補充保險明細是不是固定沒資料
+        程式與正式機版本是否有落差 (扣繳單位統一編號從程式看不出來怎麼帶出 companyinfo.uniform_no, 備註也是, 眷屬明細的生日看不出來怎麼把後2碼變成*)
+        近二年的定義是 (今年與去年、去年與前年、資料庫最新一筆資料減一年)
+        
+    參數設定
+        公司的印章串接 FLM
+        
+    判斷人員國籍
+        AUOREF.paitw01_o1 ~ AUOREF.paitw05_o7.NATION='Vietnam'
+        
+    先做參數設定設定有哪些權限控管，以及有哪些角色
+        權限控管對應選單
+    再做每個角色對應的權限功能，角色要有優先權(優先權高可以模擬優先權低)
+    
+    參數設定
+        代碼類別
+        
+        代碼值    顯示文字      啟用    備註
+        
+        
+5/5
+    參數設定
+        代碼重複判斷與阻擋
+        admin 無法移除
+        
+    權限設定
+        tree destroy
+
+
+5/7
+    emp_no to role
+
+Problem
+
+serial_no
+title
+content
+type
+order_by
+active
+
+problem_serial_no
+
+
+Problem role
+
+5/8
+    寫 create table 的 sql
+
+5/10 (14/32)
+    常見問題
+        動態多國語欄位
+        選擇 icon
+        更新排序
+
+5/12
+    匯入資料
+    列印
+    上傳公司章 (FLM)
+    權限設定
+    
+    多國語維護的 Modal 編輯不會帶出全部語系
+    
+    常見問題回答的元件
+
+5/14
+    textarea 自動放大
+    RPS 改 emp_data 主管權限 預設權限
+    
+    調整公司章維護只能更新最新，串接 FLM
+    薪資袋留言多國語
+    
+5/17
+    
+    薪資查詢手機版的假勤明細資料怎麼取得
+    保費證明匯入與扣繳憑單匯入沒有對應舊系統的功能，舊系統的資料匯入看起來是匯入薪資，也沒有對應新系統的選單
+    需要 FLM 的 sys_id, username, password (上傳公司章)
+    
+    保費證明匯入
+    ImportInsuranceData.aspx?MenuIndex=4,6
+    扣繳憑單匯入
+    ImportDeductData.aspx?MenuIndex=4,7
+    
+    USP_deduction_import_deductinfo11:55
+    USP_inssurance_import_assurance
+    
+    Area 對應 人員 對應 site
+    
+    判斷人員國籍
+        AUOREF.paitw01_o1 ~ AUOREF.paitw05_o7.NATION='Vietnam'
+ 
+    扣繳憑單匯入
+    保費證明匯入
+    公司章放在系統目錄
+    權限設定用 site , IsIDL 來區分角色
+    薪資查詢要呼叫不同的 SAP Function: ZHRPY_GETPAYROLLRESULT_AUS
+    看 [emp_area] 的 [hr_site_id] (目前所在) 及 [company1] (從哪裡來), 來判斷是派過來還是派出去
+
+    SalarySearchMax
+    SalaryPrintable
+    DeductSearchMax
+    DeductPrintable
+    AssuranceSearchMax
+    AssurancePrintable
+    EditRoles
+    
+    RoleRule
+        role
+        hr_site_id
+        job_idl
+
+[{
+    type_title: "薪資/獎金",
+    type_icon: "fa-hand-holding-usd"
+},
+{
+    type_title: "加班/請假",
+    type_icon: "fa-history"
+},
+{
+    type_title: "保險",
+    type_icon: "fa-umbrella"
+},
+{
+    type_title: "其他問題",
+    type_icon: "fa-cogs"
+}];
+    
+5/21
+
+5/25
+    窗口
+        AUHQ/AUCN
+        DL/IDL
+        廠區
+        姓名
+        電話
+        信箱
+        
+    if (dstSalary.Tables[0].Columns.Contains("abkrs"))
+    {
+        salaryAccount.Area = ((row["abkrs"] is DBNull) ? string.Empty : row["abkrs"].ToString().Trim());
+    }
+    else
+    {
+        salaryAccount.Area = "AUO";
+    }
+        
+5/26
+
+    聯絡窗口 / 維護聯絡窗口
+    公司章儲存及顯示
+    
+5/27
+
+    常見問題 HTML 編輯元件
+    常見問題動態長多國語
+    常見問題 串權限
+    
+    
+5/28
+
+    判斷人員國籍
+        AUOREF.paitw01_o1 ~ AUOREF.paitw05_o7.NATION='Vietnam'
+                    
+        舊版薪資系統
+            用 SAP T_ACCOUNT.abkrs 做為 company (如果沒有為 AUO)
+            以 [sys_area].area 對應 company_no
+            這個對應其實沒有必要
+            
+SELECT DISTINCT company, hr_site_id, site 
+FROM   emp_data_all 
+WHERE  active = 'Y' AND hr_site_id IS NOT NULL /*AND hr_site_id like '1%'*/ 
+
+emp_data_all
+AUOREF.dbo.paitw01_o1_aus
+AUOREF.dbo.paitw01_o1
+
+    最新消息
+        建立日期
+        公告日期
+        取消公告日期
+        標題
+        內容
+        排序
+    OSISBillboard
+
+
+    
+    
+    參數代碼與公司代碼新增時的重複判斷
+    代碼刪除判斷是否可以刪除
+    修改多國語只有繁體中文 Bug
+    多國語維護增加內文的搜尋條件
+    常見問題圖示整理
+    常見問題類別必填檢查
+    table 排序元件下載回來
+    最新消息 模擬身分 串權限
+    
+    
+剩餘工作內容
+    首頁
+        最新消息顯示畫面設計
+        最新消息依照顯示對象顯示
+    各期薪資
+        查無資料時的訊息顯示
+        依照職別取得呼叫不同的 SAP Function
+        投保級距與個人休假資料
+        顯示薪資袋留言
+        串接權限設定最大查詢範圍
+        不帶出發薪日在未來的資料
+        手機版畫面設計與資料
+    扣繳憑單
+        串接權限設定最大查詢範圍
+        稅務識別碼與在華183天顯示
+        手機版畫面設計
+    保費證明
+        串接權限設定最大查詢範圍
+        手機版畫面設計
+        顯示公司章
+    最新消息維護
+    聯絡窗口維護
+    常見問題維護
+        查無資料時的訊息顯示
+        分類 icon 做成 tab
+        分類 icon 區分 fas 與 fad ?
+    權限設定
+        盤點各功能需要的設定
+        串接可編輯角色設定
+    參數設定
+        新增時的代碼重複判斷
+        是否可以被刪除的判斷
+    多國語維護
+        加上文字的搜尋條件
+        修正編輯時只有繁體中文的 bug
+    薪資袋留言
+        做成列表 ?
+    外派津貼匯入
+    保費證明匯入
+    扣繳憑單匯入
+    模擬身分
+        串接可模擬角色設定
+    聯絡窗口
+    
+    加解密參數搬到 web.config
+    串接 SAP 參數搬到 web.config
+    
+    
+    ptitw04_o1 休假時數
+    權限設定跟參數設定的 emp_no 要抓模擬前的
+    有空研究一下 SSIS
+    
+    看舊程式怎麼區分台灣跟大陸的薪資查詢方法
+    
+dataSet = ((employeeByEmpNO.get_SalaryFormatId() != 1) ?
+    BenQ.GAIA.OSIS.SAPDataAUS.SalaryDataGenerator.GetDataFromSAP(connectionString, employeeNO, (int)queryType, startDate2, endDate2, languangeType) :
+    BenQ.GAIA.OSIS.SAPData.SalaryDataGenerator.GetDataFromSAP(connectionString, employeeNO, (int)queryType, startDate2, endDate2, languangeType));
+    
+    語系切換
+    
+    -- AUS
+    salarySAPProxy.Connection.Open();
+    string E_Run_Msg = string.Empty;
+    ZIPY001Table T_Account = new ZIPY001Table();
+    ZIPY002Table T_Item = new ZIPY002Table();
+    ZIPY003Table T_Absovt = new ZIPY003Table();
+    ZIPY004Table T_Quota = new ZIPY004Table();
+    ZIPY005Table T_Other = new ZIPY005Table();
+    salarySAPProxy.Zhrpy_Getpayrollresult_AUS(startDate.ToString(), endDate.ToString(), queryType.ToString(), employeeNO, languangeType.ToString(), out E_Run_Msg, ref T_Absovt, ref T_Account, ref T_Item, ref T_Quota, ref T_Other);
+    DataTable accountDataFromSAP = GetAccountDataFromSAP(T_Account);
+    DataTable itemDataFromSAP = GetItemDataFromSAP(T_Item);
+    DataTable absovtDataFromSAP = GetAbsovtDataFromSAP(T_Absovt);
+    DataTable quotaDataFromSAP = GetQuotaDataFromSAP(T_Quota);
+    DataTable otherDataFromSAP = GetOtherDataFromSAP(T_Other);
+    dataSet = new DataSet();
+    dataSet.Tables.Add(accountDataFromSAP.Copy());
+    dataSet.Tables.Add(itemDataFromSAP.Copy());
+    dataSet.Tables.Add(absovtDataFromSAP.Copy());
+    dataSet.Tables.Add(quotaDataFromSAP.Copy());
+    dataSet.Tables.Add(otherDataFromSAP.Copy());
+    return dataSet;
+    
+    -- 一般
+    salarySAPProxy.Connection.Open();
+    string E_Run_Msg = string.Empty;
+    ZIPY001Table T_Account = new ZIPY001Table();
+    ZIPY002Table T_Item = new ZIPY002Table();
+    ZIPY003Table T_Absovt = new ZIPY003Table();
+    ZIPY004Table T_Quota = new ZIPY004Table();
+    salarySAPProxy.Zhrpy_Getpayrollresult(startDate.ToString(), endDate.ToString(), queryType.ToString(), employeeNO, languangeType.ToString(), out E_Run_Msg, ref T_Absovt, ref T_Account, ref T_Item, ref T_Quota);
+    DataTable accountDataFromSAP = GetAccountDataFromSAP(T_Account);
+    DataTable itemDataFromSAP = GetItemDataFromSAP(T_Item);
+    DataTable absovtDataFromSAP = GetAbsovtDataFromSAP(T_Absovt);
+    DataTable quotaDataFromSAP = GetQuotaDataFromSAP(T_Quota);
+    dataSet = new DataSet();
+    dataSet.Tables.Add(accountDataFromSAP.Copy());
+    dataSet.Tables.Add(itemDataFromSAP.Copy());
+    dataSet.Tables.Add(absovtDataFromSAP.Copy());
+    dataSet.Tables.Add(quotaDataFromSAP.Copy());
+    return dataSet;
+    
+    頁面多國語
+    語系切換
+    搬 config
+
+    加上 API log
+    頁面多國語
+
+    薪資查詢從電腦版變手機版會沒任何按鈕
+    稅務識別碼
+    所得（收入）類別說明
+    
+    // api
+    loading
+    
+    call api
+    error 
+        if (not login)
+            redirect to login
+    unloading
+    
+    稅務識別碼
+    預設語系
+    
+6/23
+    久任津貼
+    http://au3hr7.corpnet.auo.com/SAMS/default.aspx
+    
+1.登入員工國家是越南，預設語系為越南文
+2.扣繳憑單匯入增加稅務識別碼欄位
+3.扣繳憑單顯示稅務識別碼及修正製單編號顯示錯誤的問題
+4.調薪通知書畫面調整
+
+6/24
+    Layout 設計 2
+    首頁 1
+    禮品頁面 0.5
+    選擇捐款日頁面 1
+    手機版排版調整 1
+    調整資料結構 1
+    不套用 CAP 頁面測試 0.5
+    
+    老實聰明獎學金募捐網頁
+    參考 https://www.rmhc.org.tw/donation/contribute_house.html
+    
+    一、系統運作所需要的table
+    二、空table可以運作
+
+    Header 60*480 (單一背景色)
+    電腦 1920*1080
+    手機 720*1280
+
+    Header 40*320
+
+    donate_background_w
+    donate_background_h
+    
+6/28
+
+    舊系統邏輯釐清	1
+    資料結構調整	1
+    新系統框架了解	1
+    計算久任津貼功能	1
+    久任津貼資料回傳 SAP 功能	1
+    久任津貼資料查詢畫面	1
+    
+    <link href="/Donate/Content/Css/select2.min.css" rel="stylesheet">
+    <script src="/Donate/Scripts/bootstrap.bundle.min.js"></script>
+    
+    @Styles.RenderFormat($"<link href='{Request.Url.Scheme}://{Request.Url.Authority}{{0}}' rel='stylsheet' type='text/css' media='print' />", "~/bundles/style/print")
+    
+    
+7/15
+
+    久任津貼
+        正式機
+            http://au3hr7.corpnet.auo.com/SAMS/
+        DB
+            SAMS
+            
+        Change List (AllowanceChangeList.aspx)
+            Create
+                產生 [module3_change_list]
+                    formNo: area + 'yyyyMM'
+                    status: 'N' 可以重新產生
+                            'Y' 無法再重新產生
+                exec sp_create_module3 @emp_no_input,@effective_date_input
+                    effective_date_input = create_date:yyyy-MM-01
+            Export To Excel
+                匯出 module3_change_list (where formNo) 資料到 Excel
+            Act To Excel
+                匯出 paitw05_act_Technology 資料到 Excel
+        To SAP (RemitSAP.aspx)
+            Search
+                
+            To SAP
+            
+        Query
+            Search
+            To Excel
+            To Excel New
+        
+        
+        有用到 sapprd 這個資料庫的 table 要記下來
+            vw_paitw05_act_Z4
+            vw_paitw05_act_Z6Z8
+        
+            
+    
+        每月1號 最後一天 的問題
+        到職 離職的問題
+        
+        Change List
+            ddlModule == 0003   久任獎金
+            
+        module3_change_list
+        
+        
+7/23
+    獎酬系統
+        OSIS\OSIS.BusinessLogic\WebMVC\Manager.cs
+            DeleteParameter 根據 code_type 刪除關聯資料
+            
+            
+8/12
+    沒有活動的頁面
+    Table 的描述
+    Menu 隱藏
+    RPS 找看看 CKEditor 的錯誤
+
+8/16
+    Table 說明補上 Sample
+    說明系統建置需要的資料
+    信件樣版參數化
+    SSIS JOB
+    
+8/17
+    門禁安全管理
+        查詢作業
+            離職名單查詢              2
+            轉調名單查詢              2
+    報表管理
+        查詢作業
+            派遣與非派遣人力統計      1.5
+            當下人力統計              1.5
+            交通車加扣款              1.5
+            護士查詢                  1.5
+            Lead & Cycle Time         2
+            福利點數撥補名單          1.5
+            人力資料下載              2
+    遵法課程 (Smart Report 的設定呈現)
+        反托拉斯上課名單查詢
+        異常名單查詢
+        遵法課程未通過
+    ALS Config (Smart Config 的設定呈現)
+        反托拉斯課程設定
+    系統維護作業
+        廠區管理維護                  2.5
+        模擬身分                      1
+        Log 檢視                      1
+        首頁維護                      1
+        Smart Config
+        Smart Report
+        
+        Excel 匯出元件測試            2
+        資料結構調整                  2
+        
+8/23
+    離職名單查詢
+    轉調名單查詢
+        之後維護廠區做完，要過濾人員有權限的廠區
+
+
+                              舊程式                                   伺服器\資料庫                          登入          資料表
+    離職名單查詢              ACReport/Quit_Query.aspx                 autchrsqltest1\AccessControl           sa            eOffering_Global.dbo.quit_main
+                                                                                                                            AUOREF.dbo.emp_data_all
+    轉調名單查詢              ACReport/Transfer_Query.aspx             autchrsqltest1\AccessControl           sa            AUOREF.dbo.emp_transfer_data
+                                                                                                                            AUOREF.dbo.emp_data_all
+    派遣與非派遣人力統計      OReport/Sdept_Query.aspx                 hrsql3\eOffering_Global                ueoffer       eOffering_Global.dbo.emp_data
+    當下人力統計              OReport/Qdept_Query.aspx                 hrsql3\eOffering_Global                ueoffer       AUOREF.dbo.emp_data_all
+    交通車加扣款              TrafficReport/Traffic_Qurery.aspx        au3hrr3\auo_mall                       sa            auo_mall.dbo.emp_person
+    護士查詢                  NurseReport/Nurse_Query.aspx             autchrsqltest1\AccessControl           sa            AUOREF.dbo.emp_data_all
+    Lead & Cycle Time         LeadCycleTime/LeadCycleTimeReport.aspx   autchrsqltest1\AccessControl           sa            AUOREF.dbo.omitw01_o1
+                                                                                                                            AUOREF.dbo.org_data_all
+                                                                                                                            e_offering.dbo.org_data_all
+                                                                                                                            e_offering.dbo.org_data_all_dotline
+                                                                                                                            e_offering.dbo.hcp_org_r
+                                                                                                                            e_offering.dbo.hcp_regionsite_c
+                                                                                                                            eoffering_global.dbo.jr_no
+                                                                                                                            eoffering_global.dbo.dept_mapping_org
+                                                                                                                            eoffering_global.dbo.jo_sitecode
+                                                                                                                            eoffering_global.dbo.c_code_map
+                                                                                                                            eoffering_global.dbo.resume_sap
+                                                                                                                            eoffering_global.dbo.jo_no
+                                                                                                                            eoffering_global.dbo.offer_emp_kind
+                                                                       au3frdb2\flower_dm                     eHDP          flower_dm.dbo.FM_FORM_HEADER
+    福利點數撥補名單          OReport/Ewc_Query.aspx                   autchrsqltest1\AccessControl           sa            AUOREF.dbo.emp_data_all
+                                                                                                                            AUOREF.dbo.paitw01_o1
+                                                                                                                            AUOREF.dbo.paitw05_o7
+                                                                                                                            e_offering.dbo.emp_kind
+                                                                                                                            eOffering_Global.dbo.quit_main
+    人力資料下載              OReport/MenPower_Query.aspx              autchrsqltest1\AccessControl           sa            accesscontrol_source
+                                                                                                                            paitw05_act
+    
+    
+變數名稱
+顯示名稱
+元件提供者
+    setValue
+    getValue
+    validate
+    html
+
+9/15
+    多國語維護
+    選單權限設定
+    人力資料下載
+    Excel 加密
+    
+9/17
+
+    人力資料平台
+        廠區、Unit下拉選單加上權限
+        廠區下拉選單加上群組
+        廠區、Unit下拉選單一律讀Config
+    薪資查詢系統
+        保費證明上傳 dept_no 改為 org_id ??
+        薪資袋留言複製功能
+        查詢角色的下拉選單判斷權限，調整排序功能
+        查看扣繳憑單同年份有兩筆的問題
+
+    正式機欄位
+        SELECT [emp_no]
+              ,[action_code]
+              ,[action_type]
+              ,[reason_code]
+              ,[reason]
+              ,[trans_date]
+              ,[org_name]
+              ,[emp_type]
+              ,[title]
+              ,[create_date]
+              ,[trans_edate]
+              ,[employ_sta_name]
+              ,[employ_sta_code]
+          FROM [sapprd].[dbo].[paitw05_act]
+          
+    人力資料平台
+    
+        把查詢語法存到資料庫   http://auohqhrmaptt01.corpnet.auo.com/ATeam/EmpData/CertQry
+        頁面加入說明區塊，可以從管理功能維護
+        
+        -- 廠區、Unit下拉選單加上權限
+        -- 廠區、Unit下拉選單一律讀Config
+        -- 修正多國語維護 BUG
+        -- 代碼維護的角色加上可視欄位的維護
+        -- 調整所有下載功能的檔案名稱
+        -- 廠區下拉選單加上群組
+        Excel 加密
+        
+10/4
+        AUOConfig
+            FunctionSetting.aspx    設定 Config
+            DataConfig.aspx         顯示 Config
+        AUOReport
+            ReportConfig.aspx       設定 報表
+            ReportViewer.aspx       顯示 報表
+            
+        嘗試 FLM 加密
+        
+        人力智財網
+            
+        
+        
+http://tw100027113.corpnet.auo.com/AccessControl/WebForm/AUOConfig/DataConfig.aspx
+
+http://tw100027113.corpnet.auo.com/AccessControl/Smart/ConfigSettings
+
+
+反托拉斯上課名單
+    廠區 BU 部門代碼
+異常名單查詢
+    部門代碼 廠區
+遵法課程
+    部門代碼 廠區
+
+
+
+
+select '' as profile_code union all SELECT profile_code FROM Profile_c WHERE (profile_type = 1) and active='Y' order by profile_code
+select '' as profile_code union all SELECT profile_code FROM Profile_c WHERE (profile_type = 1) and active='Y' order by profile_code
+select '' as profile_code union all SELECT profile_code FROM Profile_c WHERE (profile_type = 1) and active='Y' order by profile_code
+
+UPDATE Platform_ParaSetting_C
+SET    [data_source] = '
+    SELECT '''' AS code_name
+    UNION ALL
+    SELECT code_name
+    FROM   AccessControlCodeMap
+    WHERE  code_type = ''Site''
+           AND active = ''Y''
+    ORDER  BY code_name '
+WHERE  para_name = 'site' 
+
+
+
+發信
+
+
+
+
+
+
+CreateExcel
+AntiTrustMail
+    AntiTrustMail_AUHQ
+    AntiTrustMail_AUSZ
+    AntiTrustMail_AUXM
+    AntiTrustMail_AUKS
+CreateBossListExcel
+CreateDisableAccountExcel
+CreateSecretaryListExcel
+CreateDisableAccountWeeklyExcel
+GDPRMail
+    GDPRMail_AUHQ
+    GDPRMailfor7Days
+    GDPRMailfor14Days
+    GDPRMailforUp21Days
+    
+    
+
+AccessControl_AntiTrustExcel			AccessControl_AntiTrustExcel發送遵法課程Excel名單
+    WSTask:MethodName="CreateExcel"
+
+AccessControl_AntiTrust_ALSData			AccessControl_AntiTrustExcel抓取ALS資料
+
+AccessControl_AntiTrust_Mail			AccessControl_AntiTrust Mail Alert
+    WSTask:MethodName="AntiTrustMail"
+
+ExportData_to_outlook_daily			    提供非AUCN地區前一天離職人員及最新組織人事資料給Outlook
+    WSTask:MethodName="CreateBossListExcel"
+    WSTask:MethodName="CreateDisableAccountExcel"
+    WSTask:MethodName="CreateSecretaryListExcel"
+
+ExportData_to_outlook_weekly			提供本週離職人員給outlook
+    WSTask:MethodName="CreateDisableAccountWeeklyExcel"
+
+AccessControl_GDPR_Mail			        AccessControl GDPR Mail Alert
+    WSTask:MethodName="GDPRMail"
+
+
+AccessControlWebService
+    web_service_name
+    web_service_desc
+    web_service_export_type = directory / mail
+    web_service_export_target
+    query_name
+
+AccessControlMailTo
+    id
+
+
+AccessControlMailToEmp
+    mail_to_id
+    emp_no
+    
+
+把 WebService 對應整理出來
+嘗試把 Job 中的 WebService 換成 api
+調整 Job 中 SQL 對應的資料表名稱
+列出新舊資料表名稱對應
+
+
+一個 WebService 對應多個動作 (WebServiceFunction)
+
+取得資料的 SQL 語法
+資料欄位對應標頭
+動作分類
+    1. 將資料轉換成 Excel 存放到指定目錄
+        檔案名稱
+        存放目錄
+        
+    2. 將資料轉換成 HTML 的 <table> 做為信件內容
+        MailGroupBy
+            信件標題樣版
+            信件內容樣版
+            收件人工號 SQL 語法
+            副本郵件地址 SQL 語法
+
+    明天問美玲 IDS
+    Ro62K3a7Dl8= 這個 mail 要登入誰的去看
+    https://mail-test.corpnet.auo.com/?_task=mail&_err=session
+
+執行 Job 執行新對應的 web service
+
+    
+http://tw100027113.corpnet.auo.com/AccessControl_API/api/WebService/ConfigTest?id=1
+    
+今天寫週報
+
+790379
+
+選單維護 包含連結設定
+
+
+彙整樣版
+    BUI
+    藍色標題列
+    移除 EF
+    GetHelper 與 SetHelper 改為 ApiClient
+    
+    預載機制
+    加入 NpoiService 移除 NpoiHelper
+    CKEditor 在 modal 部分功能無法使用的問題
+    Api.Service 加入依賴注入
+    解決 FLM 與 IDS 無法從 BusinessLogic 呼叫的問題
+    框架預設功能調整
+    AccessControl.DataAccess 重構
+
+必填欄位
+多國語
+
+
+
+C:\Production\AccessControl\App_Data\
+
+
+\\auohqhrmaptt01\Production\ShareToVendor\KaiHuang\公用文件\ESOT 框架概述 20211108.txt
+
+
+DB 文件
+新舊 DB 對應
+站台建置資料
+Web Service 設定
+
+
+004 要驗證
+006 要驗證 初步測沒問題
+007 009 把 get 改 post
+
+確認資料空白的查詢條件
+確認資料卡在 50% 的查詢條件
+確認相同的查詢條件在舊系統跑多久
+
+
+
+
+測試機資料區間
+
+離職日
+1997/02/28
+2020/09/11
+入職日
+1980/12/31
+2020/09/10
+派任日
+2004/10/25
+2020/09/03
+
+在職
+    查詢入職日在查詢日期之前(包含)
+      且離職日是空的或在查詢日期之後(不包含)
+      
+離職
+    查詢派任日在查詢區間內 (系統限制 2010/10/01 以後(不包含))
+
+新進
+    查詢入職日在查詢區間內
+
+
+2010-07-02
+2021-12-17
+
+多語系為 value
+框架調整
+    首頁一定會有權限
+
+
+CFT
+    權限相關的資料表要有 Update Date
+
+
+
+
+
+2021/11/29
+    CFT說明文件                                 0.5
+    查詢
+        CFT人員查詢                             0.5
+    CFT人員管理
+        人員異動申請單作業                      2
+        人員異動申請撤回作業                    2
+        人員異動簽核作業                        2
+        人員異動記錄查詢作業                    1
+    CFT評核
+        CFT評核                                 2
+        CFT評核查詢                             1
+    系統管理
+        角色作業權限設定作業                    2
+        分會維護作業                            1
+        員工角色設定維護作業                    1
+        角色維護作業                            1
+        分會及主委異動申請作業                  2
+        分會及主委異動撤回作業                  1
+        分會及主委異動查詢作業                  1
+        技術專家提報資格對照表維護              0.5
+        專家領域名稱維護                        0.5
+        CFT總會名稱維護                         0.5
+        CFT總會管理者維護                       0.5
+        委員職稱維護                            0.5
+        CFT文件上傳                             1
+        Log檢視                                 0.5
+    作業查詢
+        歷史記錄查詢作業                        0.5
+        主委查詢作業                            0.5
+    資料結構調整                                2
+    系統優化                                    2
+
+
+
+ToDo
+    Cap 登入資料機制
+    下拉選單連動
+
+    Step
+    Page
+
+-- 下拉選單連動
+-- 讀取權限
+-- 登出
+
+CFTCodeMapProperty
+EmailTemplateService
+
+
+command to json
+
+
+
+BUI
+
+HRData
+
+PreLoading
+
+GetML
+
+
+
+
+
+ASP.NET 1.1 版本問題
+IUSER 目錄權限
+
+多國語匯入匯出
+頁面多國語
+TopGroup 從 CodeMap 獨立出來
+Member 改為 GroupMember
+
+
+pps ppsx
+<iframe id="if1" src="#" width="800px" heigt="600px"></iframe>
+$("#if1").attr("src", getHRData("WebMVCUrl") + "aa.pps");
+
+mvc htaccess
+
+
+
+時間顯示在行事曆標題
+PCMT
+https://github.com/technovistalimited/bootstrap4-datetimepicker
+
+
+
+bootstraptable bug?
+
+$table.bootstrapTable("hideRow", {
+    index: 0
+});
+
+$table.bootstrapTable("updateCell", {
+    index: 1,
+    field: "OnEdit",
+    value: true
+});
+
+// Others
+
+
+
+select * from C_SMO_OPERATION_TIME_M
+select * from C_SMO_OPERATION_TIME_D
+
+select *
+from C_SMO_CODE c
+left join C_SMO_ML cm on cm.[key] = 'CODE#' + c.kind + '#' + c.[value] and cm.lang = 'TW'
+where c.kind = 'BOSS_LEVEL_ITEM' and c.[value] in ('3', '5', '6', '10')
+
+-- 基準日
+-- 作業起始日
+-- 作業結束日
+-- 生效日
+-- 提前提醒天數
+-- 備註
+
+
+
+
+
+
+site all: *
+
+SELECT TOP (1000) [serial]
+      ,[sap_position]
+      ,[sap_job]
+      ,[tw_name]
+      ,[cn_name]
+      ,[en_name]
+      ,[boss_level]
+      ,[site]
+      ,[company]
+      ,[refer_name]
+  FROM [SmartOrg].[dbo].[C_SMO_TITLE_MAP] where sap_job = '主管類'
+
+SELECT distinct [company]
+  FROM [C_SMO_SITE_MAP]
+
+
+
+auo_mall
+ef
+
+在 auo_mall 建一個 config 資料表
+不能用非正式機連正式機 DB
+
+SSDT-Setup-CHT.exe /INSTALLALL[:150338dc] /passive
+
+{F032C8B4-9239-49BA-AC94-D237E31F1D00}
+
+
+測試 FlowER
+        [HttpGet, Route("TestCreateNewForm")]
+        public IHttpActionResult TestCreateNewForm(string formKind)
+        {
+            var result = _managerService.TestCreateNewForm(formKind);
+            return Json(result);
+        }
+
+        public FlowerCreateNewFormResponse TestCreateNewForm(string formKind)
+        {
+            // AUO.FORM.466
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create($"http://auhqitapts1.corpnet.auo.com/FlowER20PublicAPI/Form/CreateNewForm?formKind={formKind}&filler={LoginData.EmpNo}");
+            request.Method = "GET";
+            request.Headers.Add("formKind", formKind);
+            request.Headers.Add("securityCode", "{F032C8B4-9239-49BA-AC94-D237E31F1D00}");
+            request.ContentType = "application/json";
+            using (var responseStream = request.GetResponse().GetResponseStream())
+            {
+                using (var responseReader = new StreamReader(responseStream, Encoding.UTF8))
+                {
+                    var responseJson = responseReader.ReadToEnd();
+                    return JsonConvert.DeserializeObject<FlowerCreateNewFormResponse>(responseJson);
+                }
+            }
+        }
+
+
+
+CFT 檔案的 FLM 連結
+檔案大小千分位
+ToString("N2")
+
+申請表單類別影響顯示欄位
+寄信
+
+1.
+把測試計畫寫完
+2.
+把測試作完
+3.
+DB Schema
+4.
+寄信+申請表單類別影響顯示欄位
+
+    Dapper.SqlMapper.SetTypeMap(
+        typeof(Modal.DbModels.CFTQuery),
+        new Dapper.CustomPropertyTypeMap(
+            typeof(Modal.DbModels.CFTQuery),
+            (type, columnName) =>
+                type.GetProperties().FirstOrDefault(prop =>
+                    prop.GetCustomAttributes(false)
+                        .OfType<System.ComponentModel.DataAnnotations.Schema.ColumnAttribute>()
+                        .Any(attr => attr.Name == columnName) || prop.Name == columnName)));
+
+
+CFT 補信件
+
+審核功能
+CAP 另外設定 (獨力站台登入)
+
+信件範本多國語
+
+
+EmpSAPInfo.aspx
+
+HRMS
+SQL 分三段
+    1. 建立有連到其他資料的 View
+    2. 建立自己的 Table
+    3. 資料移轉
+    
+選單權限
+
+功能名稱	                                    預估工時(人天)
+首頁	                                        1
+系統管理	    Profile	                        5
+                個人資料異動審核	            3
+                維護短期派任	                1                   V
+                維護語文能力	                1                   V
+                維護認證紀錄	                1                   V
+                維護專業論文	                1                   V
+                維護專業期刊	                1                   V
+                維護專長	                    1                   V
+                維護人才	                    1                   V
+                人才FLM	                        2                   V
+                角色維護作業	                1                   V
+                角色權限維護	                1                   V
+                角色權限進階設定	            1                   V
+                員工角色維護	                1                   V
+                多國語維護	                    1                   V
+                信件範本維護	                1                   V
+                資料集維護	                    2                   V
+                模擬身分	                    0.5                 V
+                Log 檢視	                    0.5                 V
+主管查詢平台	主管查詢	                    3                   V
+                語言成績查詢	                2                   V
+管理查詢	    管理者主管查詢
+                副理級以下員工	                2                   V
+                離職人員查詢	                2                   V
+                離職人員查詢
+                副理級(含)以下	                2                   V
+                管理者主管查詢	                2                   V
+                主管查詢-停等年資查詢	        2                   V
+                主管查詢-停位年資查詢	        2                   V
+                Bosslevel report	            2                   V
+                管理者主管查詢一般職員工	    2                   V
+                管理者主管查詢(稽核)	        2                   V
+                管理者主管查詢(For人評會)	    2                   V
+
+                語言成績查詢(for HR)	        2                   V
+                離職人員語言成績查詢(for HR)	2                   V
+資料結構調整	                                2
+測試優化	                                    2
+
+
+QueryMain.aspx?QueryKind=SiteMgrAll
+
+CodeMap
+訂便當
+
+
+
+data model mapper
+code snippets
+
+
+個人資料維護
+    新增資料
+    hashtag
+dateFormat
+tab 權限
+
+問美玲 Profile Key 的加密能不能改
+    overtime 缺了一個預存程序 sp_view_holiday
+    isBossQueryLogin 怎麼判斷
+
+func_no, name,     type, 
+    901  select1   input/button
+    
+有 View 依照 View 去做
+沒有 View 讓他設定 row col
+    row-col
+    button function
+    table column
+    input type
+        select
+        select:multiple
+        input
+        input:datepicker
+        input:select2
+        
+    
+    template
+        list edit:modal
+        list edit:all-row
+        list edit-row
+        
+把資料集做成 Reporter
+    ManagerController 跟 AdminController 切開
+    View 對應 Func 改為 1 對多
+    
+    
+主管查詢	                                3       QueryMain.aspx
+                                                        Boss
+                                                        query_mode = clsBPL.query_kind.Default
+
+主管查詢-停等年資查詢	                    2       QueryGrade.aspx
+主管查詢-停位年資查詢	                    2       QueryTitle.aspx
+
+管理者主管查詢	                            2       QueryMain.aspx?QueryKind=SiteMgrAll
+                                                        ManagerAll
+                                                        query_mode = clsBPL.query_kind.ForSiteMgr
+                                                        query_all = True
+管理者主管查詢 一般職員工	                2       QueryMain.aspx?QueryKind=SiteNormal
+                                                        ManagerNormal
+                                                        query_mode = clsBPL.query_kind.ForSiteMgr
+                                                        query_all = False
+                                                        query_level = 30
+                                                        query_normal = True
+管理者主管查詢(稽核)	                    2       QueryMain.aspx?QueryKind=SiteMgr20
+                                                        ManagerUnder20
+                                                        query_mode = clsBPL.query_kind.ForSiteMgr
+                                                        query_all = False
+                                                        query_level = 20
+管理者主管查詢(For人評會)	                2       QueryMain.aspx?QueryKind=SiteMgrAll&People=Y
+                                                        ManagerPeople
+                                                        query_mode = clsBPL.query_kind.ForSiteMgr
+                                                        query_all = True
+管理者主管查詢 副理級以下員工	            2       QueryMain.aspx?QueryKind=SiteMgr
+                                                        ManagerUnder30
+                                                        query_mode = clsBPL.query_kind.ForSiteMgr
+                                                        query_all = False
+                                                        query_level = 30
+Bosslevel report	                        2       QueryMain.aspx?QueryKind=QueryBossLevel
+                                                        BossLevel
+                                                        query_mode = clsBPL.query_kind.QueryBossLevel
+                                                        query_all = True
+離職人員查詢	                            2       QueryMain.aspx?QueryKind=QueryLeave1
+                                                        Leave
+                                                        query_mode = clsBPL.query_kind.QueryLeave
+                                                        query_all = True
+離職人員查詢 副理級(含)以下	                2       QueryMain.aspx?QueryKind=QueryLeave2
+                                                        LeaveUnder30
+                                                        query_mode = clsBPL.query_kind.QueryLeaveUnder30
+                                                        query_all = False
+                                                        query_level = 30
+
+
+語言成績查詢	                            2
+語言成績查詢(for HR)	                    2
+離職人員語言成績查詢(for HR)	            2
+
+        Dim RoleList As ArrayList = bpl.getUserRoleName(Session("str_cap_emp_no"))
+        For Each item As String In RoleList
+            If item.Trim = "Super_User" OrElse item.Trim = "Super_Mgr" OrElse item.Trim = "C&B_Mgr" Then
+                Me.role_mode = clsBPL.mode_type.CorpHR
+                Exit For
+            End If
+        Next
+
+        If Me.role_mode <> clsBPL.mode_type.CorpHR Then
+            If bpl.CheckBossUnder30(Session("str_cap_emp_no")) Then
+                role_mode = clsBPL.mode_type.boss
+
+                If Me.agvEmpData.Columns.Count >= 15 Then
+                    Me.agvEmpData.Columns(14).Visible = True
+                End If
+
+            ElseIf bpl.CheckIsSecretary(Session("str_cap_emp_no")) Then
+                role_mode = clsBPL.mode_type.secretary
+            Else
+                role_mode = clsBPL.mode_type.others
+            End If
+        End If
+        
+        {sqlHeader}
+        {sqlOwnOrg}
+        {sql}
+        UNION
+        {sqlSP}
+        {sql}
+        
+問美玲
+    select * from CodeList where type_id = '3'
+    這些資料在正式機是否還有 active = 'Y' 的
+
+逾時或 API 404 的訊息
+當畫面高度沒有超出螢幕時，會有垂直捲軸的問題
+
+
+Alt+F1 插入程式碼片段
+Alt+F2 建置專案
+Alt+F3 建置方案
+
+
+進派條件維護
+    F/C                                拿掉
+    不能有的績效                       拿掉
+    O/A+ E/A G/B                       拆開
+    搜尋條件的廠長級處長級搜尋不到     修正
+    職權 職稱                          加 nowrap
+    判斷                               min-width: 80px
+    
+TmplSE 框架重點
+    1. ApiService 的 DI 與 Interface 讓所有 Web 服務的 config 集中在 Web.config
+    2. 不用宣告 Action 的預設動作 (return View or API)
+        支援 DataAnnotations 標籤的驗證
+        支援多國語的錯誤訊息
+    3. 資料集功能與應用
+    4. Repository 支援強型別與弱型別，完全以 Dapper 做為底層，且對 Transaction 的寫法進行優化
+    5. CodeMap 預設模型，只要設定 Action 或 View 對應的 CodeType 就能有一個維護功能的頁面
+    6. LoginData 的獲取方式
+
+
+javascript: document.querySelectorAll(".TDPreviewTextSolid").forEach(function(tr) { if (tr.querySelectorAll("td")[13].innerText == "Y" && tr.querySelectorAll("td")[14].innerText == "Y") { tr.style.display = "none"; } })
+
+
+
+基底
+    重寫 AppCode: 把整個 options 序列化給 js, 全部用 js 實做 (要可以選擇編輯是打開 modal 還是在 table 內進行，Role 改用行內編輯)
+    重寫 UserRole (員工角色維護) 改為二維勾選框
+    把 ApiService 的 Role 也寫進 identity，讓 Controller 支援 [Authorize]
+    HTML 內容阻擋
+    角色規則 (RoleRule)
+    Vue 重寫基底
+    多國語維護可以另外用 textarea 或 cke 編輯
+    
+    var $currentModal = $(".modal.show");
+    $currentModal.modal("hide");
+    $currentModal.modal("show");
+    選單的排序功能壞掉了
+    
+Wiki
+    專案結構
+    加入一個頁面
+    設定頁面權限
+    多國語
+    ViewBag
+    呼叫 API 與 API 的權限
+    ClientData
+    遮罩 (BUI)
+    API 錯誤訊息
+    API 檔案上傳
+    檔案下載 (FLM, local)
+    Server 端儲存檔案
+    欄位驗證
+    資料集
+    
+HrTmplSE.Studio
+    匯出資料表 Schema
+    匯出測試報告
+    資料表關聯
+    SQL 語法 Builder
+    程式 Builder
+    Sql Profile 轉譯
+        '(?>''|[^'])*'
+        HrTmplSE_Studio
+    
+    
+BossQuery
+    寄信功能 與 job
+    重建 DB 從舊系統搬多國語
+    測試報告 測試情境
+    
+文件整理
+    Web Service 對應
+    更新 schema
+    舊系統 Profile 參數串接改法
+    
+    
+    
+舊系統選單權限資料轉移
+獨立登入機制 (機密資料系統二次登入)
+
+站台合併解決方案
+
+
+https://stackoverflow.com/questions/55939860/how-to-fix-error-ancm-in-process-handler-load-failure
+
+權限管理                    1
+頁面資訊修改                2
+各廠區領取時間及窗口設定    2
+新增申請單                  3
+查詢申請單                  2
+申請單審核                  3
+相關文件下載                1
+
+
+reway + appkind appitem
+-- cdams_revway_c 改多語系表
+申請單有 IDL 與 DL 時以 DL 為主
+sys_func_auth_t 資料移轉到 CDAMSRoleClaim
+
+
+
+
+$emit('input', $event.target.value)
+
+https://www.npmjs.com/package/vuejs-datepicker
+
+reway 選擇項目調整
+
+寄信與信件範本
+多國語
+FlowER 表單內頁
+FlowER 表單編號連結
+
+print 按鈕
+
+G01_E01_C.aspx?print_no=
+G01_E01_E.aspx?print_no=
+G01_E02_edit.aspx?print_no=
+G02_E01_C_edit.aspx?print_no=
+
+packages config setter
+
+http://tw100027113.corpnet.auo.com:8088/Debug
+http://tw100027113.corpnet.auo.com:8088/Debug/CDAMS/Application/Search
+
+AUO.FORM.376
+22
+
+
+
+產出測試報告模版
+產出資料結構文件
+匯出站台收斂檔案
+專案名稱變更
+
+tableau 參考 HRBI\Webform\allow\PT_PTMS002.aspx
+HRBI
+select * from BI_C_TableauView
+
+@* 原樣式下拉頭像 *@
+<div class="overflow-hidden img-circle d-flex align-items-center mx-auto" style="width: 90px; height: 90px;">
+    <img src="" alt="User Image" class="w-100 h-auto position-relative">
+</div>
+<div class="text-center">@(employee?.RealName)</div>
+<div class="text-center"><small>@(employee?.DepartmentId)</small></div>
+<div class="text-center"><small>@(employee?.EmployeeId)</small></div>
+<div class="dropdown-item dropdown-footer">
+    <div class="text-right">
+        <a href="@Url.Action("Logout", "Home")" class="btn btn-default btn-flat">
+            <span res="CommonLogout">登出</span>
+        </a>
+    </div>
+</div>
+
+            appComponent.confirmAsync(getRes("PageDeleteAppCodeConfirm", "確定要刪除嗎"))
+                .then(function (value) {
+                });
+                
+                
+\\au3hr2\d$\Production
+\\AUOHQHRMTT01\d$\Production
+
+http://auohqhrmtt01.corpnet.auo.com/SqlWebAdmin/
+http://auohqhrmtt01.corpnet.auo.com/HR_SmartReport/Webform/Report/reportviewer.aspx?report_id=fd01122f-b1d8-4a8f-b318-153f1a9d5147
+
+
+http://auohqhrmtt01.corpnet.auo.com/OSIS/
+http://auohqhrmtt01.corpnet.auo.com/OSIS/Startup.aspx
+http://auohqhrmtt01.corpnet.auo.com/BossQuery/WebForm/Main.aspx
+http://auohqhrmtt01.corpnet.auo.com/performance_global/Webform/Main.aspx
+http://auohqhrmtt01.corpnet.auo.com/PYPortal/
+http://auohqhrmtt01.corpnet.auo.com/PYPortal/WebForm/Main.aspx
+
+http://auohqhrmaptt01/performance_global/Webform/Main.aspx
+
+paulyanghrc
+--adtba3!0308076
+adtba3@0308076
+adtba3~0308076
+
+HR_SmartReport
+
+1.5.1
+角色宣告加入 ManageRoles
+角色宣告頁重做呈現元件的方式
+員工角色維護套用 bootstrap-table-vue.js
+管理角色實際作用
+1. 角色維護 只能對管理角色進行新增修改刪除
+2. 角色選單維護 只能對管理角色設定選單權限
+3. 角色宣告維護 只能對管理角色設定宣告值 (只有 Admin 可以修改自己的宣告)
+4. 員工角色維護 新增或編輯員工角色時，只能變更管理角色的值
+5. * 管理角色不會因模擬身分而增加，但會因模擬身分而減少
+i18n bundle
+body.trigger("lang")
+
+OSISBillboard 重新規劃
+OSISBillboardRole 轉成 RoleClaim
+OSISProblemTypeRole 轉成 RoleClaim
+OSISRoleAdvanced 轉成 RoleClaim
+usp_getEmpRoles 合併 GetUserRoles
+
+
+
+
+API URL 移除
+加 frame block
+加 procliy
+
+
+獎酬查詢維護功能寫法翻新		9/2 ~ 9/13
+獎酬查詢一般功能寫發翻新		9/14 ~ 9/23
+
+
+
+角色管理角色模組與設定介面 5
+選單維護
+角色維護
+角色選單維護
+角色宣告維護
+員工角色維護
+信件範本維護
+資料集維護
+多國語維護
+各期薪資
+各期薪資 AUCN
+調薪通知書
+獎金分紅通知書
+扣繳憑單下載
+保費證明下載
+FAQ
+聯絡窗口
+最新消息維護
+聯絡窗口維護
+常見問題維護
+薪資袋留言
+外派津貼匯入
+保費證明匯入
+扣繳憑單匯入
+參數設定
+var sheet = book.CreateSheet("StatusReport");https://www.auo.com/
+sheet.ProtectSheet("Password");
+
+
+https://auohqhrmaptt01.corpnet.auo.com/SmartOrg/Meeting/PCMT?ID=1
+
+
+
+選單隱藏欄位沒有作用
+角色選單全選沒有作用
+選單切換連結類別沒有作用
+選單調整系統頁面為依賴頁面與隱藏頁面
+
+
+ie 支援
+    $refs 包在 nextTick
+    CKE + nav
+implement 移除
+資料庫重建
+多國語
+
+
+agvOrgAuth
+管理 [BossQueryRoleSiteEmpGroup] 的介面
+窗口要可以一個廠區多人
+select2 empNo 效能問題
+
+GetZipCodeOptions 不要使用資料集
+
+資料集修改
+    移除 
+    
+https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+https://blog.darkthread.net/blog/write-aspnetcore-with-vscode/
+
+看 WebDAV 是不是可以關掉
+看 400 訊息在測試機丟回來的結果
+最新消息搜尋條件
+最新消息與常見問題的顯示對象，下拉選單與顯示 UI
+
+
+新增角色時會一直 Refresh 的問題
+claims cache 在切換 tab 不即時的問題
+
+修正 AppCode 的新增權限判斷問題
+                var _self = this;
+                this.preloadAsync()
+                .then(function (value) {
+                    _self.toggleButtons();
+                });
+                
+https://stackoverflow.com/questions/64037382/getting-instance-of-authorizationhandler-without-serviceprovider
+
+
+Auth
+Http
+Elmah
+
+檔案上傳
+多國語移除 MenuId 開頭
+    (getRes(Tag)?\(('|")[^'"]|res(=|-))
+資料集重新設計移除 MenuId
+
+
+Model 需要避開的屬性名稱 id, methodName
+
+
+管理 table 的固定欄位
+主管查詢角色對應選單
+
+
+員工角色 重複問題
+
+10/24
+
+資料集以 Vue 重寫
+更新 ApiService 的元件版本
+// 修正舊版 Dapper 無法接收 JArray 參數的問題
+sqlParameters.Add(queryParameter.ParameterName.Trim(), sqlParameterArray.OfType<JValue>().Select(x => x.Value).ToList());
+
+檔案上傳要測
+FlowER
+Elmah
+移轉指令
+
+多國語取代 <br> 功能
+
+git mv HrTmplSE.ApiService/Controllers/_ApiController.cs HrTmplSE.ApiService/Controllers/_ControllerBase.cs
+git mv HrTmplSE.WebMVC/Content HrTmplSE.WebMVC/wwwroot
+git mv HrTmplSE.ApiService/Web.config HrTmplSE.ApiService/appsettings.json
+git mv HrTmplSE.ApiService/Web.Debug.config HrTmplSE.ApiService/appsettings.Development.json
+git mv HrTmplSE.WebMVC/Features/AppViewPage.cs HrTmplSE.WebMVC/Features/AppRazorPage.cs
+git mv HrTmplSE.WebMVC/Features/AppModule.cs HrTmplSE.WebMVC/Features/AppMiddleware.cs
+git mv HrTmplSE.WebMVC/Web.config HrTmplSE.WebMVC/appsettings.json
+git mv HrTmplSE.WebMVC/Web.Debug.config HrTmplSE.WebMVC/appsettings.Development.json
+git mv HrTmplSE.WebMVC/Views/web.config HrTmplSE.WebMVC/Views/_ViewImports.cshtml
+
+.net core convertsion
+
+問 Maggie emp_area 資料來源
+修改 GetUserRoles 對應 hr_site_id 要判斷 emp_area.emp_group = 'A' 時的原工號
+
+for Test
+    function ajaxErrorHandler(jqXHR, textStatus, errorThrown) {
+
+    }
+
+    
+    
+    res-html
+
+select * from OSISResource where [name] not like '%\_%' escape '\' or [name] in (
+'A02PageSortDescHTML_1',
+'A02PageSortDescHTML_2',
+'CommonActive_Brackets',
+'CommonInactive_Brackets',
+'H03PageSortDescHTML_1',
+'H03PageSortDescHTML_2',
+'H04PageSortDescHTML_1',
+'H04PageSortDescHTML_2',
+'H08PageSortDescHTML_1',
+'H08PageSortDescHTML_2')
+    
+    
+multilingual
+
+
+<script src="../../plugins/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+<input type="checkbox" name="my-checkbox" checked data-bootstrap-switch>
+$(this).bootstrapSwitch('state', $(this).prop('checked'));
+
+formatter.row 取代為 row.item
+formatter.field 取代為 row.field.key
+formatter.index 取代為 tableOffset + row.index
+anyEdit 改為 .some(function (x) { return x._onEdit; })
+
+res="Page
+res="Page_HrManager_News_
+
+res("Page
+res("Page_HrManager_News_
+
+resTag("Page
+resTag("Page_HrManager_News_
+
+((?<=res(=|\()("|'))|(?<=resTag\(("|')))(Page)
+
+
+res="Common
+
+
+Page_CodeAlias	顯示文字
+Page_CodeName	代碼
+Page_DeleteConfirm	確定要刪除嗎
+Page_DeleteSuccessed	刪除完成
+Page_SortDesc	以<span class="text-danger">拖曳</span>的方式來調整順序<br />調整順序完成後請點擊最下方的<span class="text-danger">儲存</span>按鈕以套用變更
+Page_SortIndex	順序
+Page_SortTitle	排序
+
+('zh-TW', 'Page_CodeAlias', '顯示文字'),
+('zh-TW', 'Page_CodeName', '代碼'),
+('zh-TW', 'Page_DeleteConfirm', '確定要刪除嗎'),
+('zh-TW', 'Page_DeleteSuccessed', '刪除完成'),
+('zh-TW', 'Page_SortDesc', '以<span class="text-danger">拖曳</span>的方式來調整順序<br />調整順序完成後請點擊最下方的<span class="text-danger">儲存</span>按鈕以套用變更'),
+('zh-TW', 'Page_SortIndex', '順序'),
+('zh-TW', 'Page_SortTitle', '排序'),
+
+
+appComponent ui
+appClient client
+CommonButton
+CommonDate
+box card
+getPageData ui.data
+
+sticky-header
+
+
+
+AUHQ 調薪
+IDL 調薪系統管理
+
+
+HR 自主作業維護
+新增條新專案
+新增專案階段
+設定專案管理員
+上傳調薪作業單位 下載後調整再上傳
+上傳調薪預算
+
+
+第一階主管超過時間還能儲存
+
+By 專案
+
+http://auohqhrmaptt01.corpnet.auo.com/AutoPYP/System/SqlSetMgt
+用 maggie 登入
+
+
+AUHQ調薪作業
+    直屬人員調薪分配_系統作業(限300人以下)      3
+    直屬人員調薪分配_下載檔案                   3
+    下轄人員調薪簽核_系統作業(限300人以下)      3
+    下轄人員調薪簽核_下載檔案                   3
+    查詢部門                                    2
+    查詢人員                                    2
+
+IDL調薪系統管理
+    管理者查詢                                 4
+    代理人                                     1
+    維護首頁                                   1
+    檢核表                                     2
+    開放主管權限                               1
+    上傳雙實組織                               1
+    加密 & 解密                                1
+    上傳說明文件                               1
+    HR上傳IDL調薪                              1
+    產出通知名冊                               1
+    特定對象通知                               2
+
+HR自主作業維護
+    新增IDL調薪專案                            3
+    新增專案階段                               3
+    設定專案管理員                             3
+    上傳調薪預算                               2
+    上傳調薪作業單位                           2
+    權限設定                                   1
+    調薪結果轉入 SAP interface                 1
+    
+    
+    
+現金分紅作業
+    直屬主管分紅作業_系統作業(限300人以下)      2
+    直屬主管分紅作業_下載檔案                   2
+    分紅簽核_系統作業(限300人以下)              2
+    分紅簽核_下載檔案                           2
+    
+現金分紅查詢
+    查詢部門                                    1
+    查詢人員                                    1
+    
+現金分紅系統管理
+    管理者查詢                                  3
+    代理人                                      1
+    維護首頁                                    1
+    檢核表                                      1
+    開放主管權限                                1
+    上傳雙實組織                                1
+    加密 & 解密                                 1
+    上傳說明文件                                1
+    HR上傳分紅                                  1
+    產出通知名冊                                1
+    特定對象通知                                1
+
+HR 自主作業維護
+    新增分紅專案                                2
+    新增專案階段                                2
+    設定專案管理員                              2
+    上傳分紅預算                                1
+    上傳分紅作業單位                            1
+    權限設定                                    1
+    
+    
+績效獎金
+    直屬主管獎金分配_系統作業(限300人以下)      1
+    直屬主管獎金分配_下載檔案                   1
+    下轄人員獎金簽核_系統作業(限300人以下)      1
+    下轄人員獎金簽核_下載檔案                   1
+    
+績效獎金查詢
+    部門預算查詢                                1
+    個人作業結果查詢                            1
+    
+績效獎金系統管理
+    管理者查詢                                  2
+    代理人                                      1
+    維護首頁                                    1
+    檢核表                                      1
+    開放主管權限                                1
+    上傳雙實組織                                1
+    加密 & 解密                                 1
+    上傳說明文件                                1
+    HR上傳獎金                                  1
+    產出通知名冊                                1
+    
+績效獎金維護
+    新增專案                                    1
+    新增專案階段                                1
+    設定專案管理員                              1
+    上傳組織資料                                1
+    上傳員工績效獎金                            1
+    權限設定                                    1
+    
+    
+key	lang	text
+FUNC#2000	TW	人員獎勵提報                   1
+FUNC#2100	TW	指派下轄廠/處作業單位          2
+FUNC#2300	TW	主管作業                       3
+FUNC#2500	TW	HR作業                         2
+FUNC#2600	TW	匯入SAP                        1
+FUNC#9010	TW	專案管理                       2
+
+畫面浮水印
+點一下問號再點一下變說明
+
+
+select * from IDLSal_OrgLine_R
+where CONVERT(CHAR(10), Getdate(), 111) >= start_date
+and ( CONVERT(CHAR(10), Getdate(), 111) BETWEEN Start_Date AND End_Date)
+order by Boss_Emp_No desc
+
+
+await command.queryListAsync("GetIDLSalFormPersonalBudget", {
+    Project: 33, Org: "ML8BP0", ProjectGroup: "DL"
+})
+
+
+var vv = $("#pageContainer")[0].__vue__;
+vv.modalScales.Default.head
+
+command.queryList("GetIDLSalFormPersonalBudget", {
+    Project: 33, Org: "ML8BP0", ProjectGroup: "DL"
+}, {
+    afterExchangeParameter: JSON.stringify({
+        DecryptColumnNames: [
+            "BossBonusAfter",
+            "BossBonusBefore",
+            "HrAmount",
+            "HrMax",
+            "HrMin",
+            "LowAmount",
+            "MfgBonusAvgLastYear",
+            "MonSal",
+            "SalArchitecture",
+            "SalMid",
+            "SalStructure",
+            "UpAmount"
+        ]
+    })
+})
+
+command.export("GetIDLSalFormPersonalBudget", {
+    Project: 20, Org: "MMDKA0", ProjectGroup: "IDL"
+}, {
+    displayRowNumber: true,
+    afterExchangeParameter: JSON.stringify({
+        DecryptColumnNames: [
+            "BossBonusAfter",
+            "BossBonusBefore",
+            "HrAmount",
+            "HrMax",
+            "HrMin",
+            "LowAmount",
+            "MfgBonusAvgLastYear",
+            "MonSal",
+            "SalArchitecture",
+            "SalMid",
+            "SalStructure",
+            "UpAmount"
+        ]
+    }),
+    target: "Default"
+})
+
+update IDLSal_Project_R set Active = 'Y' where Project_id in (20, 22, 31) -- N
+update IDLSal_Project_R set End_Date = '2023-12-31' where Project_id = 20 -- 2018-04-18 00:00:00.000
+update IDLSal_Project_R set End_Date = '2023-12-31' where Project_id = 22 -- 2018-04-01 00:00:00.000
+update IDLSal_Project_R set End_Date = '2023-12-31' where Project_id = 31 -- 2020-07-31 00:00:00.000
+
+update IDLSal_OrgLine_R set End_Date = '2023-12-31' where Boss_Emp_No = '1704001' and Project_id in (21, 23, 24, 25, 26, 27, 28, 33, 35, 36, 38, 39, 40, 42, 43, 44, 48, 49)
+21 2018-03-25 00:00:00.000
+23 2018-07-04 00:00:00.000
+24 2018-07-04 00:00:00.000
+25 2019-03-25 00:00:00.000
+26 2019-07-14 00:00:00.000
+27 2019-07-14 00:00:00.000
+28 2019-07-14 00:00:00.000
+33 2020-07-14 00:00:00.000
+35 2021-03-31 00:00:00.000
+36 2021-04-08 00:00:00.000
+38 2021-07-06 00:00:00.000
+39 2021-07-13 00:00:00.000
+40 2021-07-14 00:00:00.000
+42 2022-03-29 00:00:00.000
+43 2022-03-29 00:00:00.000
+44 2022-04-07 00:00:00.000
+48 2022-07-14 00:00:00.000
+49 2022-07-12 00:00:00.000
+
+update IDLSal_Project_R set End_Date = '2023-12-31' where Project_id in (21, 23, 24, 25, 26, 27, 28, 33, 35, 36, 38, 39, 40, 42, 43, 44, 48, 49)
+21 2018-12-03 00:00:00.000 
+23 2019-06-05 00:00:00.000 
+24 2019-06-05 00:00:00.000 
+25 2019-06-05 00:00:00.000 
+26 2019-08-05 00:00:00.000 
+27 2019-08-05 00:00:00.000 
+28 2019-08-05 00:00:00.000 
+33 2020-07-31 00:00:00.000 
+35 2021-10-13 00:00:00.000 
+36 2021-04-23 00:00:00.000 
+38 2021-10-30 00:00:00.000 
+39 2021-07-30 00:00:00.000 
+40 2021-08-13 00:00:00.000 
+42 2022-08-21 00:00:00.000 
+43 2022-04-25 00:00:00.000 
+44 2022-04-25 00:00:00.000 
+48 2022-08-21 00:00:00.000 
+49 2022-07-29 00:00:00.000 
+
+update IDLSal_Project_R set Active = 'Y' where Project_id in (21, 23, 24, 25, 26, 35, 36, 38, 39, 40, 42, 43, 44, 48, 49) -- N
+
+
+https://aws.amazon.com/tw/machine-learning/ml-use-cases/intelligent-search/
+
+SELECT          TOP (200) command_name, command_result_index, target, region, column_name, column_content, row_index, 
+                            col_index, rowspan, colspan
+FROM              PYPortalCommandScale
+WHERE          (command_name = 'GetIDLSalFormPersonalBudget') AND (target = 'Default')
+ORDER BY   command_name, command_result_index, target, region DESC, row_index, col_index
+
+
+npoi rgb to index: workbook.GetCustomPalette().FindSimilarColor(r, g, b).GetIndex()
+
+SQL 
+
+登入 更新 Claims 並給予 cookie 紀錄 Claims 已經更新過
+
+
+
+column_name
+ui 欄位
+計算欄位
+
+
+CDAMS
+    取件日期 說明
+
+勞保投保明細 在職證明 申請事由
+
+
+權限功能相容性調整
+Log 機制相容性調整
+列表元件相容性調整
+PYPortal 已開發功能相容性調整
+
+
+dotnet run --project "D:\KaiHuangAres\Workspace\HrTmplCore\HrTmpl.ApiService"
+dotnet run --project "D:\KaiHuangAres\Workspace\HrTmplCore\HrTmpl.WebMVC"
+
+dotnet run --project "D:\KaiHuangAres\Workspace\PYPortal\PYPortal.ApiService"
+dotnet run --project "D:\KaiHuangAres\Workspace\PYPortal\PYPortal.WebMVC"
+
+Form/QueryPerson
+登入方法	   尚未判定
+
+
+匯入功能
+下轄人員
+
+
+上傳雙實組織 匯出解密
+
+
+
+我記憶力不太好，我自己寫過的程式都會忘記
+別人做的時候：你有沒有想過... 自己做的時候：我能不能不要寫這麼複雜
+我覺得我自己很好溝通   然後別人想法跟他不一樣的時候，   講第一句話：你不要再說了我知道你要說什麼，講第二句話：你怎麼會想到那邊去
+
+
+不要給 移轉指令碼 讓PM自己想辦法
+
+
+
+
+
+修正基底角色員工 [source] IS NULL 的問題
+
+施工單 1008393 
+
+
+TreeView
+    line expend add remove
+    drap-drop
+    edit-text
+    check multi-select:
+
+
+ASP.NET Core HTTPS 開發憑證
+
+
+
+Get-FileHash -Algorithm MD5 -Path (Get-ChildItem "D:\KaiHuangAres\Workspace\AccessControl\*.*" -Recurse) | Export-Csv -Path "D:\KaiHuangAres\Temp\0508.csv" -NoTypeInformation

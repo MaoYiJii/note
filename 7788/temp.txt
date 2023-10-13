@@ -1,0 +1,120 @@
+<style scoped>
+
+</style>
+<template>
+
+</template>
+<script>
+    //# sourceURL=/Home/Index.vue
+    module.exports = {
+
+    }
+</script>
+
+
+
+<portal to="destination">
+
+</portal>
+<portal-target name="destination" />
+
+
+
+DECLARE @message NVARCHAR(500)
+
+IF NULLIF(@EmpNo, '') IS NULL
+  BEGIN
+      SET @message = '[EmpNo] is required.'
+      GOTO RESILTS
+  END
+
+-- INSERT
+
+RESILTS:
+IF ( NULLIF(@message, '') IS NOT NULL )
+  BEGIN
+      RAISERROR(@message, 16, 10);
+  END 
+
+  
+  
+
+用 Regex 來解析程式碼
+
+Regex 的基本運用
+許多人剛接觸正規表達式時，都只是用來做字串的驗證 (例如是否為 Email, 電話, 身分證字號...等等)
+但 Regex 還有其他非常好用的功能
+
+Regex 的基本規則
+
+\d
+\w
+\s
+
+Regex 的匹配組成
+Regex 在匹配前只會有一個字串來表示他的規則，也就是正規表達式
+而當 Regex 對另一個字串 (input) 進行匹配時，就會產生 0 到多個匹配結果 (Match)
+
+舉例
+var regex = new Regex("\d+");
+
+當
+var result1 = regex.Matches("abc");
+
+
+字串跳脫字元
+Atomic group
+
+左右括號匹配
+Balancing
+
+
+方法參數
+data: {
+    foo: null
+},
+computed: {
+    isDisabled() {
+        if (foo) {
+            return true;
+        }
+        return false;
+    }
+},
+
+regex
+
+Atomic Group: (?>a|b)
+在原本的或前面加上 ?>
+當在這個 Group 匹配了一個結果，不管整段規則最後是否有匹配，都不會再用這個 Group 的下一個項目進行匹配
+
+(?=a)
+匹配但不捕獲
+常用在一些工具的 replace 功能，能避免把一些該保留的字取代掉
+
+(?<=a)
+前匹配但不捕獲
+
+(?!a)
+匹配不等於但不捕獲
+
+\1\2
+重複出現
+index:
+    <(\w+)><\/\1>
+named: (PHP only?)
+    <(?<tag>\w+)><\/\g<tag>>
+
+regex replace
+    C#: https://docs.microsoft.com/en-us/dotnet/standard/base-types/substitutions-in-regular-expressions
+    php: https://www.jetbrains.com/help/phpstorm/tutorial-finding-and-replacing-text-using-regular-expressions.html
+    js: https://developer.mozilla.org/zh-TW/docs/Web/JavaScript/Reference/Global_Objects/String/replace#%E6%8C%87%E5%AE%9A%E4%B8%80%E5%80%8B%E5%AD%97%E4%B8%B2%E7%82%BA%E5%8F%83%E6%95%B8
+    輸出
+        index: $1 $2
+        index(old): \1 \2 (有些程式語言不支援)
+        named: ${a} ${b} (有些程式語言不支援)
+    
+
+    
+    
+    

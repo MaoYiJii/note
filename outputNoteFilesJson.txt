@@ -1,0 +1,35 @@
+﻿Regex extRegex = new Regex(@"\.\w+$");
+List<object> GetLinks(int layer, string directoryBase, string pathBase, string urlBase)
+{
+    List<object> links = new List<object>();
+    foreach (var directory in Directory.EnumerateDirectories(directoryBase))
+    {
+        var directoryInfo = new DirectoryInfo(directory);
+        if (directoryInfo.Name == ".git")
+        {
+            continue;
+        }
+        links.Add(new
+        {
+            text = directoryInfo.Name,
+            children = GetLinks(layer + 1, directory, $"{pathBase}/{directoryInfo.Name}".TrimStart('/'), $"{urlBase}/{WebUtility.UrlEncode(directoryInfo.Name)}".TrimStart('/'))
+        });
+    }
+    foreach (var file in Directory.EnumerateFiles(directoryBase).Where(x => x.EndsWith(".md") || x.EndsWith(".html")))
+    {
+        var fileInfo = new FileInfo(file);
+        var name = extRegex.Replace(fileInfo.Name, "");
+        if (layer == 0 && name == "index")
+        {
+            continue;
+        }
+        links.Add(new
+        {
+            text = name,
+            href = $"{urlBase}/{WebUtility.UrlEncode(name)}".TrimStart('/')
+        });
+    }
+    return links;
+}
+// todo: change note path and output file path
+File.WriteAllText(@"output.txt", JsonConvert.SerializeObject(GetLinks(0, @"\note", null, null), Formatting.Indented));

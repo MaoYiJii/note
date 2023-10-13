@@ -1,0 +1,138 @@
+完整電腦名稱
+    tw100027113.corpnet.auo.com
+    
+Email
+    Kai.Huang.Ares@auo.com
+    
+O 工號
+    O2103008
+    02107008 (ADP)
+分機
+    506009
+
+GIT
+    http://auhqplmap02.corpnet.auo.com/Bonobo.Git.Server/Repository/Index
+    KaiHuangAres
+    4527@auo
+
+MAZ-ODEVDB01
+    uAccessControl
+    hrtest
+    
+承商安全管理系統
+    20873360
+    20873360@ares
+    
+ADP
+    kaihuangauo
+    O2107008
+    Adp+01141
+    
+AUOHQHRMTT01
+    paulyanghrc
+    --adtba3!0308076
+    adtba3@0308076
+
+IDS 查看測試信件
+    https://mail-test.corpnet.auo.com/?_task=mail&_err=session
+
+公文系統(舊)
+    http://tw100101084.corpnet.auo.com/rps/WebForm/Home.aspx
+    http://tw100027113.corpnet.auo.com/RPS_Old/WebForm/Home.aspx
+公文系統(測試機)
+    http://auohqhrmaptt01.corpnet.auo.com/RPS
+
+CAP
+    WinnieChung     1706032
+    MeilingChen     1704218 N223250815
+    MaggieWu        0802081
+    tlliu           1905007
+    alexrchsieh     2108053
+    vickeychen      0104450
+    wenchunpeng
+    ginaycchen      2209046
+    hsiangyunchen   1611039
+    mikewang
+    arnoldsjchung   1507367
+    siniwen         X1427660
+    ivyyrchen       1709211
+    kevinchiang     1708080
+    aralechen       1704001
+    
+SQL SERVER
+    TW100027113\SQLEXPRESS
+    
+PLSQL
+    ora 存放位置
+        D:\oracle\product\11.2.0\client_1\network\admin
+    ghr
+    ghr_scm
+    
+移除 admin
+    
+    在 C:\Users\kaihuangares\Documents\IISExpress\config\applicationhost.config 新增站台
+			<site name="BossQuery" id="123" serverAutoStart="true">
+				<application path="/">
+					<virtualDirectory path="/" physicalPath="%IIS_SITES_HOME%\WebSite1" />
+				</application>
+                <application path="/BossQuery">
+					<virtualDirectory path="/" physicalPath="D:\KaiHuangAres\Workspace\BossQuery\BossQuery.WebMVC" />
+				</application>
+                <application path="/BossQuery_API">
+					<virtualDirectory path="/" physicalPath="D:\KaiHuangAres\Workspace\BossQuery\BossQuery.ApiService" />
+				</application>
+				<bindings>
+					<binding protocol="http" bindingInformation="*:80:tw100027113.corpnet.auo.com" />
+				</bindings>
+			</site>
+    用 cmd 執行指令
+        "C:\Program Files\IIS Express\iisexpress.exe" /siteid:2
+        "C:\Program Files\IIS Express\iisexpress.exe" /siteid:3
+        "C:\Program Files\IIS Express\iisexpress.exe" /siteid:4
+        "C:\Program Files\IIS Express\iisexpress.exe" /siteid:5
+        
+.net core 執行
+    dotnet run --project "D:\KaiHuangAres\Workspace\HrTmplSE Core 2.2\HrTmplSE.WebMVC"
+    dotnet run --project "D:\KaiHuangAres\Workspace\HrTmplSE Core 2.2\HrTmplSE.ApiService"
+    
+    
+薪資查詢系統
+    遠端 auhqhrapts1
+        auo\maggiewu
+        u.3286abc
+    SVN
+        maggiewu
+        u.3286abc
+        
+薪資查詢系統(舊)
+    https://au3hr2.corpnet.auo.com/OSIS_TEST/Startup.aspx
+    
+薪資查詢系統
+    AUOHQHRMTT01
+    uosis_auo
+    osis$123
+    
+PYPortal
+    AUOHQHRMTT01
+    PYPortal
+    PYPortal@itbc1
+    uPYPortal
+    uPYPortal123
+
+津貼系統
+    GIT
+        http://auhqplmap02.corpnet.auo.com/Bonobo.Git.Server/allowance.git
+    
+
+Webex
+    Meeting number (access code): 1841862426 
+    Meeting password: 928463
+    https://auomeeting.webex.com
+
+測試機
+    http://auohqhrmaptt01.corpnet.auo.com/OSIS
+
+
+C:\Users\kaihuangares\Documents\Visual Studio 2010\Templates\ProjectTemplates
+C:\Users\kaihuangares\Documents\Visual Studio 2010\Templates\ItemTemplates
+

@@ -1,0 +1,992 @@
+從 WebMVC 呼叫 ApiService (GET)
+    WebApiHelper.GetMethod("api/Home/getMultiLanguageList?functionId=" + functionId + "&lang=" + lang);
+
+View 單頁儲存資料
+    getHRData(key)
+    setHRData(key, value)
+    
+常用的 HRData (setHRData 在 Layout)
+    getHRData("WebMVCUrl");     // WebMVC 的站台網址
+    getHRData("WebApiUrl");     // ApiService 的站台網址
+    getHRData("UserEmpId");     // 登入者對應的 Id
+    getHRData("FunctionId");    // Controller + Action 對應的 Id
+    getHRData("pageData.lang"); // 取得目前選擇的語系
+    
+更新 View 的 多語系資料 (HRData.ML)
+    getMLData(getHRData("pageData.lang"));
+    
+取得當前登入的使用者
+    BaseController.GetUser();
+取得當前語系
+    BaseController.GetLang();
+
+SQL Query
+    SqlExcute.GetSqlDateTable(sqlText, param.ToArray(), "SystemManage", "getTimeSetUpList");
+
+寫 Log
+    LogHelper.GetLogger("getContactList").Error(ex.ToString());
+
+Ajax
+    $.get({
+        url: getHRData("WebApiUrl") + 'api/Setting/getMenuList',
+        dataType: "json",
+        success:
+            function (data, textStatus) {
+            }
+    });
+    試著用 axios 取代 ajax
+     axios.post(getHRData("WebMVCUrl") + "Maintain/deleteBank", formData)
+        .then(function (response) {
+            bootbox.alert({
+                message: response.data.Message,
+                size: 'small',
+                callback: function () {
+                    $("#btnQuery").trigger("click");
+                }
+            });
+        }).catch(function (error) {
+            console.log(error);
+        });
+        
+框架與專案
+    依照功能在 WebMVC 加入 Controller 與 Action
+    在 ApiService 加入相同的 Controller
+    在 BusinessLogic 的 WebMVC 目錄加上名稱為 Controller+Action 的 class
+    
+    
+人員下拉選單
+    $("#edit-emp-no").select2({
+        width: "100%",
+        allowClear: true,
+        maximumInputLength: 20,
+        minimumInputLength: 1,
+        placeholder: getML("PageEmpPlaceholder"),
+        ajax: {
+            type: "Get",
+            url: getHRData("WebMVCUrl") + "Manager/GetPrivilegeEmpSource",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: function (params) {
+                return {
+                    keyword: params.term,
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.options
+                };
+            },
+            error: {}
+        }
+    });
+有候選選項的輸入框
+    $("#out_org").select2();
+    如果要可以輸入選項不存在的文字
+        $("#out_org").select2({ tags: true });
+多選下拉選單
+    <select id="edit_site" multiple><select>
+    $("#edit_site").select2();
+select2 的清除無作用解法
+    參數裡面一定要有 placeholder, 空字串也可以
+    如果有 tags: true 則需要加上事件來清除文字
+    $("#out_org").on("select2:clearing", function () {
+        $("#out_org").text("");
+    });
+select2 在 modal 無法作用的問題
+    // select2 的參數加上 dropdownParent
+    dropdownParent: $("#modal-edit-privilege")
+select2 多選框，選擇時不要關閉
+    closeOnSelect: false
+select2 多選框，取消選擇時不要開啟
+    $select.select2()
+    .on('select2:unselecting', function () {
+        $(this).data('unselecting', true);
+    }).on('select2:opening', function (e) {
+        if ($(this).data('unselecting')) {
+            $(this).removeData('unselecting');
+            e.preventDefault();
+        }
+    });
+select2 多選加上群組
+    https://github.com/bnjmnhndrsn/select2-optgroup-select
+select2 設定有搜尋功能的值
+    $("#EditEmpNo").select2("trigger", "select", {
+        data: { id: response.Item.EmpNo, text: response.Item.EmpName }
+    });
+select2 資料來源不是 API
+    $("[data-field='ORGID'].select2").select2({
+        width: "100%",
+        allowClear: true,
+        maximumInputLength: 20,
+        minimumInputLength: 1,
+        placeholder: getML("WORD#org_choose"),
+        ajax: {
+            transport: function (params, success, failure) {
+                var data = null;
+                if (params.data.term) {
+                    var result = goSS("get5000OrgOptions", [params.data.term]);
+                    if (result.Code == 0) {
+                        data = result.Data[0];
+                    }
+                }
+                success({
+                    results: data
+                });
+            }
+        }
+    });
+select2 選擇項目時的事件
+    $select2.on("select2:selecting", function (e) {
+        var data = e.params.args.data;
+        
+    });
+select2 觸發設定搜尋框的值
+    var $search = $select2.data("select2").dropdown.$search || $select2.data("select2").selection.$search;
+    $search.val(text);
+    //$search.trigger("input");
+    // 寫法 1
+    $select2.data("select2").trigger("query", {
+        term: text
+    });
+    // 寫法 2
+    $select2.select2("trigger", "query", {
+        term: text
+    });
+
+
+bootstrapTable 行內編輯
+    參考 https://examples.bootstrap-table.com/index.html#issues/987.html
+    
+    TextBox 範例
+        // bootstrapTable 欄位設定
+            formatter: inputTextFormatter,
+            events: {
+                "change :text": inputTextOnChange
+            }
+        /** 輸入框 (text) */
+        function inputTextFormatter(value, row, index, field) {
+            var $input = $('<input type="text" class="form-control" />');
+            $input.attr("data-field", field);
+            $input.attr("value", value);
+            return $input[0].outerHTML;
+        }
+        /** 輸入框 (text) 更新資料 */
+        function inputTextOnChange(e, value, row, index) {
+            updateCell(this.$el, index, $(e.target).attr("data-field"), $(e.target).val());
+        }
+        /** bootstrapTable 更新資料 共用方法 */
+        function updateCell($table, index, field, value) {
+            $table.bootstrapTable("updateCell", {
+                index: index,
+                field: field,
+                value: value,
+                reinit: false
+            });
+        }
+    
+    CheckBox 範例
+        // bootstrapTable 欄位設定
+            formatter: inputCheckboxFormatter,
+            events: {
+                "change :checkbox": inputCheckboxOnChange
+            }
+        /** 輸入框 (checkbox) */
+        function inputCheckboxFormatter(value, row, index, field) {
+            var $input = $('<input type="checkbox" />');
+            $input.attr("data-field", field);
+            if (value) {
+                $input.attr("checked", "checked");
+            }
+            return $input[0].outerHTML;
+        }
+        /** 輸入框 (checkbox) 更新資料 */
+        function inputCheckboxOnChange(e, value, row, index) {
+            updateCell(this.$el, index, $(e.target).attr("data-field"), $(e.target).prop("checked"));
+        }
+        /** bootstrapTable 更新資料 共用方法 */
+        function updateCell($table, index, field, value) {
+            $table.bootstrapTable("updateCell", {
+                index: index,
+                field: field,
+                value: value,
+                reinit: false
+            });
+        }
+
+取得 Client 端 IP
+    protected string GetClientIPv4()
+    {
+        var hostName = GetClientHostName();
+        foreach (IPAddress ip in Dns.GetHostAddresses(hostName))
+        {
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                return ip.ToString();
+            }
+        }
+        foreach (IPAddress ip in Dns.GetHostEntry(hostName).AddressList)
+        {
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                return ip.ToString();
+            }
+        }
+        return string.Empty;
+    }
+    protected string GetClientHostName()
+    {
+        var httpContextWrapper = Request.Properties["MS_HttpContext"] as HttpContextWrapper;
+        if (httpContextWrapper != null)
+        {
+            if (httpContextWrapper.Request.ServerVariables["HTTP_VIA"] == null)
+            {
+                return httpContextWrapper.Request.ServerVariables["REMOTE_ADDR"];
+            }
+            return httpContextWrapper.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+        }
+        return null;
+    }
+    
+AJAX GET 的字串陣列參數沒有被正確接收
+    於 ajax 的 options 裡將 traditional 設為 true 即可
+    
+WPF
+    設定圖片
+    xaml
+        <Image Source="pack://application:,,,/Images/home.png" />
+    cs
+        Image1.Source = new BitmapImage(new Uri("pack://application:,,,/Images/home.png"));
+    
+C#
+
+    取得上層呼叫的 class 與 method
+            string className = null;
+            string methodName = null;
+            StackTrace stackTrace = new StackTrace(true);
+            foreach (var stackFrame in stackTrace.GetFrames())
+            {
+                var callerMethod = stackFrame.GetMethod();
+                if (callerMethod != null
+                    && callerMethod.DeclaringType != typeof(DefaultRepository))
+                {
+                    className = callerMethod.DeclaringType.Name;
+                    methodName = callerMethod.Name;
+                    break;
+                }
+            }
+            
+            Stack<string> callStack = new Stack<string>();
+            StackTrace stackTrace = new StackTrace(true);
+            foreach (var stackFrame in stackTrace.GetFrames())
+            {
+                var fileName = stackFrame.GetFileName();
+                if (fileName != null)
+                {
+                    var method = stackFrame.GetMethod();
+                    if (method.DeclaringType == typeof(FlowFormApplicationServiceBase))
+                    {
+                        // 不包含在 FlowFormRepositoryBase 的資訊
+                        continue;
+                    }
+                    else
+                    {
+                        int lineNumber = stackFrame.GetFileLineNumber();
+                        callStack.Push($"{fileName}: 行 {lineNumber}");
+                    }
+                }
+            }
+            return string.Join("\r\n", callStack);
+            
+SQL Transaction
+    DECLARE @chk tinyint
+    SET @chk = 0
+    Begin Transaction [Trans_Name] -- Trans_Name 交易名稱可自訂或者是不寫
+        
+        -- 可編寫多個 SQL 指令
+        INSERT INTO [Table_Name] VALUES( 'Field_Value_1' );
+        IF @@Error <> 0 BEGIN SET @chk = 1 END
+
+        INSERT INTO [Table_Name] VALUES( 'Field_Value_2' );
+        IF @@Error <> 0 BEGIN SET @chk = 1 END
+
+    IF @chk <> 0 BEGIN -- 若是新增資料發生錯誤
+        Rollback Transaction [Trans_Name] -- 復原所有操作所造成的變更
+    END
+    ELSE BEGIN
+        Commit Transaction [Trans_Name] -- 提交所有操作所造成的變更
+    END
+    
+SQL WHILE
+    -- 取得一個 code_type + 數字 不重複的 code_name
+    DECLARE @code_count INT 
+    SET @code_count = (SELECT Count(1) FROM [RPSCodeMap] WHERE code_type = @code_type)  + 1 
+    WHILE ((SELECT Count(1) 
+             FROM   [RPSCodeMap] 
+             WHERE  code_type = @code_type AND code_name = code_type + CONVERT(VARCHAR, @code_count)) > 0) 
+      BEGIN 
+          SET @code_count = @code_count + 1 
+      END 
+
+SQL IF ELSE
+    IF EXISTS (SELECT 1 
+               FROM   [RPSLanguage] 
+               WHERE  [word_key] = @word_key AND [lang] = 'TW') 
+      BEGIN 
+          UPDATE [RPSLanguage] 
+          SET    [word_value] = @tw 
+          WHERE  [word_key] = @word_key AND [lang] = 'TW' 
+      END 
+    ELSE 
+      BEGIN 
+          INSERT [RPSLanguage] ([word_key], [word_value], [lang]) 
+          VALUES (@word_key, @tw, 'TW') 
+      END 
+    
+加入 FLM Web 服務參考
+    參考 > 加入服務參考 > 進階 > 加入 Web 參考 > 貼上 Url > 修改 Web 參考名稱為 FLM > 加入參考
+    
+FLM 參考範例
+
+FlowER 1.0
+    要去 \\auhqfrapts01\forms 放簽核頁面的 aspx
+    
+    列表
+    http://auhqfrapts01.corpnet.auo.com/ApproveList/ApproveList/?FORM_KIND=AUO.FORM.466&FORM_NO=29&EMP_NO=1704218
+    表單
+    http://auhqfrapts01.corpnet.auo.com/flower/Trace/Popup/Approve/Main.aspx?Form_Kind=AUO.FORM.466&Form_No=29
+    
+FlowER 2.0
+    要去 \\auhqfrapts01\Forms20 放簽核頁面的 aspx
+    
+    列表
+    http://auhqitapts1.corpnet.auo.com/FlowER20/#/page/home
+    查看表單有哪些人要審
+    http://auhqfrapts01.corpnet.auo.com/ApproveList/ApproveList/?FORM_KIND=AUO.FORM.466&FORM_NO=29
+    表單
+    D:\KaiHuangAres\文件\Common\FlowER\GlobeFaForm553\GlobeFaForm\WebForm
+    Z:\JianJiun\Work\AutoGAS\AutoSys\ApproveForm
+    
+    http://auhqfrapts01.corpnet.auo.com/flower/Trace/Popup/Approve/Main.aspx?Form_Kind=AUO.FORM.466&Form_No=29
+    
+    http://auhqhrapts1.corpnet.auo.com/CFT/WebForm/Expert/ExpertMemberChangeApprove.aspx
+
+    http://au3dp3.corpnet.auo.com/ApproveList/ApproveList/?FORM_KIND=AUO.FORM.466&FORM_NO=29&EMP_NO=1704218
+    
+    http://tw100027113.corpnet.auo.com/CFT/Embed/GroupApplyApprove?FORM_KIND=AUO.FORM.466&FORM_NO=29&EMP_ID=O2103008
+
+
+IDS
+    一般寄信用 07
+    有附加檔案用 47
+    有FLM的附加檔案用 57
+    發送郵件要到 https://mail-test.corpnet.auo.com/?_task=mail&_err=session 去看
+    以系統(mailCode)的管理者帳號登進去看 (EX: WinnieChung/winniechung)
+    
+CAP 登入不會跳轉的問題
+    Web.config 加上以下區段
+    傳統模式
+      <system.web>
+        <httpModules>
+          <add name="AuthorizationModule" type="AUO.Common.Authentication.AuthorizationModule"/>
+        </httpModules>
+      </system.web>
+    整合模式
+      <system.webServer>
+        <!--這個設定適用IIS7整合式管線模式-->
+        <modules>
+          <add name="AuthorizationModule" type="AUO.Common.Authentication.AuthorizationModule"/>
+        </modules>
+      </system.webServer>
+      
+Regex
+    找中文                         [\u4e00-\u9fa5]
+    找 cshtml 沒有 key 的多國語    res=""|getRes(Tag)?\(""|getRes(Tag)?\(''
+
+日期元件 (datepicker)
+    <style>
+        /* 解決 vue-datepicker-local.css 會造成元件跑到最下方的問題 */
+        .datepicker {
+            position: absolute !important;
+        }
+            /* 解決 vue-datepicker-local.css 會造成某一行不能選的問題 */
+            .datepicker:before{
+                display: none !important;
+            }
+    </style>
+    <input type="text" class="form-control" name="out_date" id="out_date" value="@Model.out_date" required>
+    $("#out_date").autoDatePicker();
+    
+datepicker set value
+    $("#edit_end_date").datepicker("update", response.billboard_end_date);
+    
+HrTmplSE datepicker
+    $("#").addClass("fas")
+        .attr("placeholder", htmlAttributeDecode("&#xF073;"))
+        .attr("autocomplete", "off")
+        .datepicker({
+            format: "yyyy/mm/dd",
+            autoclose: true,
+            language: "zh-TW"
+        });
+
+calendar 加 icon
+    <div class="input-group">
+        <input type="text" class="form-control" name="out_date" id="out_date" value="@Model.out_date" required>
+        <div class="input-group-append">
+            <label class="input-group-text" for="out_date"><i class="fa fa-calendar" aria-hidden="true"></i></label>
+        </div>
+    </div>
+    
+DateTime ToString()
+    <globalization uiCulture="en-US" culture="en-US" />
+
+Popup 元件 (Picker)
+    <div class="dropdown d-inline-block">
+        <button type="button" class="btn btn-warning" id="btn-columns" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-columns"></i>
+            <span ml="PageButtonColumns">顯示欄位</span>
+        </button>
+        <form class="dropdown-menu" aria-labelledby="btn-columns">
+            <div class="form-check form-check-inline">
+                <label class="form-check-label">AA</label>
+                <input class="form-check-input" type="checkbox" name="Columns">
+            </div>
+            <div class="form-check form-check-inline">
+                <label class="form-check-label">AA</label>
+                <input class="form-check-input" type="checkbox" name="Columns">
+            </div>
+            <div class="form-check form-check-inline">
+                <label class="form-check-label">AA</label>
+                <input class="form-check-input" type="checkbox" name="Columns">
+            </div>
+            <div class="form-check form-check-inline">
+                <label class="form-check-label">AA</label>
+                <input class="form-check-input" type="checkbox" name="Columns">
+            </div>
+        </form>
+    </div>
+    
+
+
+    
+前端排版 (CSS)
+    div 垂直置中
+        BS4
+            <!-- 僅垂直置中 -->
+            <div class="d-flex align-items-center">
+
+            </div>
+            <!-- 垂直置中 + 水平置中 -->
+            <div class="d-flex align-items-center justify-content-center">
+
+            </div>
+    table row 展開 sub row
+        https://www.codeply.com/go/bp/NKtIQVbETH
+        
+HTML 換行
+
+頁面捲軸
+    document.querySelector("html").scrollTop = 0;
+    $("html").animate({ scrollTop: document.querySelector("html").scrollHeight }, 123);
+
+上傳檔案大小限制 (如果沒有設定，預設為 4MB)
+    <system.web>
+        <httpRuntime maxRequestLength="102400" executionTimeout="600"/>
+    
+            
+圖片去背工具
+    https://pixlr.com/tw/
+        
+SSIS
+    指令碼工作
+        先在 dtsx 右上角的變數建立變數
+        點開指令碼工作可以設定 ReadOnlyVariables, ReadWriteVariables
+        
+        Dts.Variables["User::dtMail"].Value = dtMail;
+        Dts.TaskResult = (int)ScriptResults.Success;
+        
+黑箱驗證
+    (A(WeBiNsPeCt))
+        
+    [13:28] https://autcinfrats01/RDWeb/Pages/en-US/login.aspx/
+
+    [13:29] 0222
+    DMZ測試未過，從dmz的測試網址抓出來確認，疑CAP環境有變，透過跳板機autcinfrats01到DMZ測試環境確認WEB Config中的DMZ測試環境設定
+
+    執行黑箱測試：跳板機(https://autcinfrats01/RDWeb/Pages/en-US/login.aspx/)
+    登入後選WIE Server
+
+    黑箱測試網址(用CHROME開)
+    https://auhqwie01.corpnet.auo.com/WIE/WebConsole/Scans.aspx
+
+
+    黑箱測試設定：
+    https://auhqwie01.corpnet.auo.com/WIE/WebConsole/ConfigureScan.aspx
+
+    黑箱測試的網址，在主機上先確定可開可登錄再掃：
+    http://dmzhrapts.auo.com/AEP/
+
+
+
+    dmz測試區，黑箱程式掃的CODE，所在位置
+    c. Conniect to 172.17.80.84 > Login by hradmin
+
+    IP:172.17.80.84
+    Local Account: hradmin
+    Password: Auo+2020
+
+    或透過svn到各系統底下放的的black黑箱作業code，再到dmzhrapts取得改好的webconfig
+
+
+    webconfig裡cap設定方式需為：
+    \\auo\gfs\IT000\ITB00\HR_CFT\6.0 Platform Tool\CAP\內部使用\新版CAP??使用方式 (003).ppt
+    
+從 wsdl 產生 C# 的 class
+    在開始選單裡找到 Visual Studio 底下的 Visual Studio Tools -> Developer Command Prompt for VS XXXX
+    輸入 wsdl /l:C# /out:{outputPath} {inputPath}
+    EX:  wsdl /l:C# /out:D:\KaiHuangAres\Temp\IdsWebService.cs D:\KaiHuangAres\Temp\Mail.wsdl
+    
+svcutil  http://localhost/people.svc /o:c:\temp\PeopleService.cs /sc
+    
+
+Javascript 列印
+    function PrintElem(elem)
+    {
+        var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+
+        mywindow.document.write('<html><head><title>' + document.title  + '</title>');
+        mywindow.document.write('</head><body >');
+        mywindow.document.write('<h1>' + document.title  + '</h1>');
+        mywindow.document.write(document.getElementById(elem).innerHTML);
+        mywindow.document.write('</body></html>');
+
+        mywindow.document.close(); // necessary for IE >= 10
+        mywindow.focus(); // necessary for IE >= 10*/
+
+        mywindow.print();
+        mywindow.close();
+
+        return true;
+    }
+    
+從 IE 導到 Chrome
+    var shell = new ActiveXObject("WScript.Shell");
+    shell.run("cmd.exe /k start Chrome " + window.location.href);
+    
+SQL
+    Datetime to string
+        CONVERT(NVARCHAR, doc.out_date, 111)
+        
+Bootstrap
+    modal 不能點外面關閉
+        $('#myModal').modal({backdrop: 'static', keyboard: false})
+        
+textarea 自動長高
+    function auto_grow(element) {
+        element.style.height = "5px";
+        element.style.height = (element.scrollHeight)+"px";
+    }
+    textarea {
+        resize: none;
+        overflow: hidden;
+        min-height: 50px;
+        max-height: 100px;
+    }
+    <textarea oninput="auto_grow(this)"></textarea>
+    
+Sql
+    CREATE TYPE dbo.MyUserIDs AS TABLE (UserID INT NOT NULL)
+
+    CREATE PROC proc_GetUsers @UserIDTable MyUserIDs READONLY 
+    AS
+    SELECT * FROM dbo.Users
+        WHERE userid IN (SELECT UserID FROM @UserIDTable)
+
+Sql 建立假資料
+    CREATE FUNCTION ToSafe (@value NVARCHAR(max)) 
+    RETURNS NVARCHAR(max) 
+    AS 
+      BEGIN 
+          DECLARE @safe NVARCHAR(max) = '' 
+          DECLARE @i   INT, @len INT 
+          DECLARE @old_char NCHAR(1), @new_char NCHAR(1) 
+          SET @i = 0 
+          SET @len = Len(@value) 
+          WHILE ( @i < @len ) 
+            BEGIN 
+                SET @old_char = Substring(@value, @i + 1, 1) 
+                SET @new_char = ( CASE @old_char 
+                                    WHEN 'A' THEN 'Y' 
+                                    WHEN 'B' THEN 'U' 
+                                    WHEN 'C' THEN 'Z' 
+                                    WHEN 'D' THEN 'P' 
+                                    WHEN 'E' THEN 'R' 
+                                    WHEN 'F' THEN 'E' 
+                                    WHEN 'G' THEN 'S' 
+                                    WHEN 'H' THEN 'O' 
+                                    WHEN 'I' THEN 'A' 
+                                    WHEN 'J' THEN 'H' 
+                                    WHEN 'K' THEN 'C' 
+                                    WHEN 'L' THEN 'K' 
+                                    WHEN 'M' THEN 'X' 
+                                    WHEN 'N' THEN 'L' 
+                                    WHEN 'O' THEN 'F' 
+                                    WHEN 'P' THEN 'D' 
+                                    WHEN 'Q' THEN 'I' 
+                                    WHEN 'R' THEN 'J' 
+                                    WHEN 'S' THEN 'B' 
+                                    WHEN 'T' THEN 'Q' 
+                                    WHEN 'U' THEN 'N' 
+                                    WHEN 'V' THEN 'M' 
+                                    WHEN 'W' THEN 'T' 
+                                    WHEN 'X' THEN 'V' 
+                                    WHEN 'Y' THEN 'G' 
+                                    WHEN 'Z' THEN 'W' 
+                                    WHEN '0' THEN '4' 
+                                    WHEN '1' THEN '6' 
+                                    WHEN '2' THEN '1' 
+                                    WHEN '3' THEN '5' 
+                                    WHEN '4' THEN '2' 
+                                    WHEN '5' THEN '3' 
+                                    WHEN '6' THEN '9' 
+                                    WHEN '7' THEN '8' 
+                                    WHEN '8' THEN '7' 
+                                    WHEN '9' THEN '0' 
+                                    ELSE @old_char 
+                                  END ) 
+                SET @safe = @safe + @new_char 
+                SET @i=@i + 1 
+            END 
+          RETURN @safe 
+      END 
+      
+從 View 找還沒放 Key 的多國語
+    (getRes(Tag)?\(""|res(-(title|placeholder))?="")
+
+regex101 分析多國語
+    // for innerText
+    res="(?<key>Page\w+?)"[^>]*>\s*(@\*)?\s*(?<text>[^<]*)\s*(\*@)?\s*<
+    // for innerHTML
+    <(?<tag>\w+)\s[^>]*(res="\$(?<key>Page\w+?)"[^>]*>\s*(@\*)?\s*(?<text>[\s\S]*?)\s*(\*@)?\s*<\/\g<tag>)
+
+    // for javascript
+    getRes(Tag)?\("(?<key>Page\w+)", "(?<text>[^"]*)"\)
+
+    // LIST
+    ('601${key}', N'${text}', 'TW'),\n
+    
+舊版多國語 把其他語系的內容放上預設值
+    UPDATE OSISLanguage
+    SET    word_value = lang + '_' + (SELECT word_value
+                                      FROM   OSISLanguage tw
+                                      WHERE  tw.word_key = OSISLanguage.word_key
+                                             AND tw.lang = 'TW')
+    WHERE  NULLIF(word_value, '') IS NULL
+           AND lang != 'TW' 
+           
+    INSERT OSISLanguage (word_key, word_value, lang)
+    SELECT word_key, 'EN_' + word_value, 'EN'
+    FROM   OSISLanguage tw
+    WHERE  lang = 'TW'
+           AND NULLIF(word_value, '') IS NOT NULL
+           AND NOT EXISTS (SELECT *
+                           FROM   OSISLanguage
+                           WHERE  word_key = tw.word_key
+                                  AND lang = 'EN')
+    UNION ALL
+    SELECT word_key, 'CN_' + word_value, 'CN'
+    FROM   OSISLanguage tw
+    WHERE  lang = 'TW'
+           AND NULLIF(word_value, '') IS NOT NULL
+           AND NOT EXISTS (SELECT *
+                           FROM   OSISLanguage
+                           WHERE  word_key = tw.word_key
+                                  AND lang = 'CN')
+    UNION ALL
+    SELECT word_key, 'VN_' + word_value, 'VN'
+    FROM   OSISLanguage tw
+    WHERE  lang = 'TW'
+           AND NULLIF(word_value, '') IS NOT NULL
+           AND NOT EXISTS (SELECT *
+                           FROM   OSISLanguage
+                           WHERE  word_key = tw.word_key
+                                  AND lang = 'VN') 
+    
+
+        
+研究 FLM
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+        <button type="submit">送出</button>
+    </form>
+
+    [HttpPost]
+    public ActionResult News(HttpPostedFileBase file)
+    {
+        byte[] bytes;
+        using (BinaryReader binaryReader = new BinaryReader(file.InputStream))
+        {
+            bytes = binaryReader.ReadBytes(file.ContentLength);
+        }
+        var user = BaseController.GetUser();
+        setHelper.apiPost("api/Manager/TestUpload", new
+        {
+            fileBytes = bytes,
+            emp_no = user.EmployeeId
+        });
+        return View();
+    }
+
+    public class Resp
+    {
+        public byte[] file { get; set; }
+    }
+    
+    public ActionResult GetFile()
+    {
+        var user = BaseController.GetUser();
+        var resp = getHelper.apiGet<Resp>("api/Manager/TestDownload", new
+        {
+            emp_no = user.EmployeeId
+        });
+        return File(resp.file, "");
+    }
+
+
+
+
+    public class Request
+    {
+        public byte[] fileBytes { get; set; }
+        public string emp_no { get; set; }
+    }
+
+    [HttpPost, Route("TestUpload")]
+    public IHttpActionResult TestUpload(Request req)
+    {
+        string sys_id = "ODS";
+        string file_name = "Test File 1.ppt";
+        string biz_id = "OSIS_Test1";
+        string security_level = "L";
+        string mark_style = "";
+        bool preconvert_pdf = false;
+        string remark = "";
+        string user_name = "flm_ods";
+        string password = "ods@0902";
+        manager.UploadFile(sys_id, req.fileBytes, file_name, biz_id, security_level, mark_style, preconvert_pdf, req.emp_no, remark, user_name, password);
+        return Json("");
+    }
+
+    [HttpGet, Route("TestDownload")]
+    public IHttpActionResult TestDownload(Request req)
+    {
+        string sys_id = "ODS";
+        string biz_id = "OSIS_Test1";
+        string user_name = "flm_ods";
+        string password = "ods@0902";
+        var bb = manager.GetFile(req.emp_no, sys_id, biz_id, user_name, password);
+        return Json(new
+        {
+            file = bb
+        });
+    }
+    
+    
+    
+    
+    
+    public void UploadFile(string sys_id, byte[] file_stream, string file_name, string biz_id, string security_level, string mark_style, bool preconvert_pdf, string emp_no, string remark, string user_name, string password)
+    {
+        using (FLM.FLMService flmService = new FLM.FLMService())
+        {
+            flmService.UploadFile(sys_id, file_stream, file_name, biz_id, security_level, mark_style, preconvert_pdf, emp_no, remark, user_name, password);
+        }
+    }
+
+    public byte[] GetFile(string emp_no, string sys_id, string biz_id, string user_name, string password)
+    {
+        string[] fileIds;
+        string fileName = "";
+        using (FLM.FLMService flmService = new FLM.FLMService())
+        {
+            fileIds = flmService.GetFileIDByBizID(sys_id, biz_id, user_name, password);
+        }
+        if (fileIds.Length > 0)
+        {
+            using (FLM.FLMService flmService = new FLM.FLMService())
+            {
+                return flmService.GetFile(fileIds[0], ref fileName, emp_no, false, new FLM.PDFFileSetting(), user_name, password);
+            }
+        }
+        return null;
+    }
+
+    public string[] GetFiles(string sys_id, string biz_id, string user_name, string password)
+    {
+        using (FLM.FLMService flmService = new FLM.FLMService())
+        {
+            return flmService.GetFileIDByBizID(sys_id, biz_id, user_name, password);
+        }
+    }
+
+    public bool HasFile(string sys_id, string biz_id, string user_name, string password)
+    {
+        return GetFiles(sys_id, biz_id, user_name, password).Length > 0;
+    }
+    
+    
+GoDirect 框架
+    1. 先找出 funcID
+        SELECT *
+        FROM   [c_atm_func]
+        WHERE  funcController = 'DynamicMgt'
+               AND funcAction = 'DispatchEdit2' 
+    
+    2. 找到對應的 js \Content\Scripts\JSFunc\JS3003.js
+        D:\KaiHuangAres\Workspace\ATeam\ATeam.WebMVC
+        
+    3. 查看 \Content\Scripts\autoJH\autoBase.js
+        找到 stepList: 裡面是依序執行的方法
+        // stepList: ['setPageEvent', 'getPagePreData', 'setPageLayout', 'setPageOther', 'setFuncInit', 'setFuncForm', 'setFuncEvent', 'setFuncUI', 'setFuncTable', 'setPageML', 'setPageLast']
+        
+    
+    function setFuncInit() {
+        // 陣列內每一個數字代表一個 row，數字本身代表該 row 有幾個等寬的 col，如果需要不等寬的 col 則以陣列取代一個數字，列陣內每個數字代表 col 對應 Bootstrap 的寬度
+        autoBG([1]);
+    }
+    function setFuncForm() {
+        // R1_C1 代表第一個 row 的第一個 col
+        $("#secMain").data('R1_C1').append(innerHTML);
+        // 網格內放置網格
+        $("#secMain").data('R1_C1').newBox({ id: "div110", bg: [[3, 3, 5], 4] });
+        $("#div110").data('R1_C1').append(innerHTML);
+    }
+    
+    autoBG 第4個參數為 elem，表示在哪個元素內加入 row-col，如果沒有填會以 _Layout.cshtml 設定的 BG = $("section#secMain.content.container-fluid"); 做為容器
+    
+    goSS 會呼叫預存程序的 GoSqlSet
+    SqlSet 對應的 SQL 查詢
+
+    SELECT ss.[name],
+           ss.[desc],
+           s.sqlCommand
+    FROM   c_atm_sqlset ss
+           INNER JOIN m_atm_common_map map ON map.mapAID = ss.sqlSetID
+           INNER JOIN c_atm_sql s ON s.sqlID = map.mapBID 
+
+    sqlset 命名習慣
+        get, ins, del, upd
+        
+    可以透過以下的 SQL 查詢 SqlSet 被解析出來的參數順序，呼叫 goSS 的參數會依序對應傳入
+        DECLARE @sql nvarchar(max) = (
+            SELECT s.sqlCommand
+            FROM   c_atm_sqlset ss
+                   INNER JOIN m_atm_common_map map ON map.mapAID = ss.sqlSetID
+                   INNER JOIN c_atm_sql s ON s.sqlID = map.mapBID 
+            WHERE name = @name)
+
+        SELECT parm
+        FROM (
+            SELECT '@' + Substring(part, 0, CASE Charindex(' ', part) WHEN 0 THEN Len(part) + 1 ELSE Charindex(' ', part) END) parm,
+                   sn 
+            FROM   dbo.String2table(
+                       Replace(
+                           Replace(
+                               Replace(
+                                   Replace(
+                                       Replace(
+                                           Replace(
+                                               Replace(
+                                                   Replace(@sql, Char(45), ' '),
+                                                   Char(43),
+                                                   ' '),
+                                               Char(41),
+                                               ' '),
+                                           Char(44),
+                                           ' '),
+                                       Char(59),
+                                       ' '),
+                                   Char(9),
+                                   ' '),
+                               Char(10),
+                               ' '),
+                           Char(13),
+                           ' '),
+                       '@')
+            WHERE  sn != 1) t
+        GROUP BY parm
+        ORDER BY Min(sn)
+    
+    goSS 的回傳結果是一個具有屬性
+        public DataTableCollection Data { get; set; }
+    的物件
+    
+    以 goSS(...).Data[0] 取得第一個 SQL 的查詢結果
+    
+    goSS 是呼叫 goSP('goSqlSet')
+    
+    goSS 是對應資料集，從頁面功能新增或修改
+    goSP 是直接對應預存程序，直接用 SQL Server 去新增或修改
+
+    goSP 第 1 個參數 是預存程序名稱 (開頭減去 atm)
+            atm 是 Web.Config 的 SysShortName 設定值
+         第 2 個參數 是給預存程序參數的陣列
+            預存程序第 1 個參數會接收到 getLang()
+            預存程序第 2 個參數會接收到 getJHData("pageData.funcID") || "0000"
+            預存程序第 3 個參數會接收到 getJHData("User.EmployeeId")
+            預存程序第 4 個參數開始才是 goSP 第二個參數陣列的資料
+    goSP 第 1 個參數 是 goSqlSet
+         第 2 個參數 是字串陣列
+            第 4 個參數是 c_atm_sqlset.[name]
+            第 5 個參數開始是給 c_atm_sqlset 查詢語法的參數
+        
+    goSP 第四個參數 fileName4EX: boolean 決定 ajax 的 url
+        setJHData("Url.sp", "@Url.Action("GoSP", "Other")");
+        setJHData("Url.sp4ex", "@Url.Action("GoSP4ExportXls", "Other")");
+        
+    goSP(...).Code == 0 代表執行成功
+    
+    autoTable 設定 spName (預設為 getDataAGBS) 透過 getATBSourceData 呼叫 goSP
+    
+    autoTable 的 status
+        Z
+        F
+        H
+        S
+        
+    多國語
+        SELECT 'JH.ML.' + ml.[key] [kind],
+               ml.[text]           [value],
+               0                   [orderSN]
+        FROM   [dbo].[C_ATM_ML] ml
+        WHERE  lang = CASE Isnull((SELECT ml2.[text] FROM [dbo].[C_ATM_ML] ml2 WHERE ml2.[key] = ml.[key] AND lang = 'ML'), '') WHEN '' THEN @Lang ELSE 'ML' END 
+        
+        屬於單字的以 WORD# 開頭
+        屬於訊息的以 MSG# 開頭
+        屬於按鈕文字的以 BTN# 開頭
+        屬於表格標題文字的 TBCH# 開頭
+        如果是常用 (在超過一個頁面以上會用到) 的則在第一個 # 之後加 {funcID}#
+              
+
+    
+
+    
+onerror="document.getElementsByClassName('user-image').forEach(function(x) { x.style.display = 'none'; });"
+
+document.querySelectorAll("#gvCDAMS tbody tr").forEach(x => { if (x.children[3].innerText == "") { x.style.display = "none"; }})
+
+遠端桌面連線
+    mstsc /admin
+
+
+dotnet 指令
+    新增專案
+    dotnet new webapp -o HrTmplSE.WebMVC
+    dotnet new classlib -o HrTmplSE.DataAccess
+    dotnet new classlib -o HrTmplSE.BusinessLogic
+    dotnet new webapi -o HrTmplSE.ApiService
+    發佈
+    dotnet publish
+    
+    
+    https://blog.darkthread.net/blog/vs2017-git-ssl-issue/
