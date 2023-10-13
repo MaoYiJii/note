@@ -65,7 +65,9 @@
     <script type="text/javascript">
         function onReady() {
             if (window.parent != window) {
-                window.parent.location.href = location.href;
+                setTimeout(function () {
+                    window.parent.location.href = location.href;
+                }, 500);
                 return;
             }
             Vue.component("link-node", {
