@@ -64,6 +64,10 @@
     
     <script type="text/javascript">
         function onReady() {
+            if (window.parent != window) {
+                window.parent.location.href = location.href;
+                return;
+            }
             Vue.component("link-node", {
                 template: "#linkNode",
                 props: {
