@@ -6,41 +6,44 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js" integrity="sha512-BAMfk70VjqBkBIyo9UTRLl3TBJ3M0c6uyy2VMUrq370bWs7kchLNN9j1WiJQus9JAJVqcriIUX859JOm12LWtw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js" integrity="sha512-BAMfk70VjqBkBIyo9UTRLl3TBJ3M0c6uyy2VMUrq370bWs7kchLNN9j1WiJQus9JAJVqcriIUX859JOm12LWtw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <script type="text/javascript">
-        new Vue({
-            el: "#app",
-            data: function () {
-                return {
-                    expandItems: []
-                };
-            },
-            methods: {
-                isExpand: function (item) {
-                    return this.expandItems.includes(item);
+        function onReady() {
+            new Vue({
+                el: "#app",
+                data: function () {
+                    return {
+                        expandItems: []
+                    };
                 },
-                toggle: function (item) {
-                    if (this.expandItems.includes(item)) {
-                        this.collapse(item);
-                    }
-                    else {
-                        this.expand(item);
-                    }
-                },
-                expand: function (item) {
-                    if (!this.expandItems.includes(item)) {
-                        this.expandItems.push(item);
-                    }
-                },
-                collapse: function (item) {
-                    var index = this.expandItems.indexOf(item);
-                    if (index >= 0) {
-                        this.expandItems.splice(index, 1);
+                methods: {
+                    isExpand: function (item) {
+                        return this.expandItems.includes(item);
+                    },
+                    toggle: function (item) {
+                        if (this.expandItems.includes(item)) {
+                            this.collapse(item);
+                        }
+                        else {
+                            this.expand(item);
+                        }
+                    },
+                    expand: function (item) {
+                        if (!this.expandItems.includes(item)) {
+                            this.expandItems.push(item);
+                        }
+                    },
+                    collapse: function (item) {
+                        var index = this.expandItems.indexOf(item);
+                        if (index >= 0) {
+                            this.expandItems.splice(index, 1);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
+        document.addEventListener("DOMContentLoaded", onReady);
     </script>
 </head>
 <body>
