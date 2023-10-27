@@ -1,12 +1,12 @@
 # General
 
-#### 取得 identity
+### 取得 identity
 
 ```sql
 SELECT IDENT_CURRENT({tableName})
 ```
 
-#### 新增包含 identity
+### 新增包含 identity
 
 ```sql
 SET IDENTITY_INSERT [dbo].[{tableName}] ON
@@ -14,7 +14,7 @@ SET IDENTITY_INSERT [dbo].[{tableName}] ON
 SET IDENTITY_INSERT [dbo].[{tableName}] OFF
 ```
 
-#### 查詢分頁資料
+### 查詢分頁資料
 
 ```sql
 SELECT *
@@ -23,7 +23,7 @@ ORDER  BY {columnName}
 OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY
 ```
 
-#### LIKE
+### LIKE
 
 | 字元     | 功能                  | 備註 |
 | ------ | ------------------- | -- |
@@ -40,15 +40,15 @@ OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY
 
 ```
 
-#### partition
+### partition
 
 ```sql
 SELECT Row_number() OVER( partition BY fr.ParentFormId, fr.ParentFieldName, fr.FormId, fr.[Name] ORDER BY ar.EndTime DESC )
 ```
 
-#### for
+### for
 
-#### foreach
+### foreach
 
 ```sql
 DECLARE @Index INT
@@ -94,7 +94,7 @@ DEALLOCATE MY_CURSOR
 
 #### Apply
 
-#### CTE
+### CTE
 
 ```sql
 ;WITH [Foo] AS (
@@ -104,4 +104,78 @@ DEALLOCATE MY_CURSOR
 
 SELECT *
 FROM   [Foo]
+```
+
+#### 最後職位任職時間
+
+```sql
+;WITH N_EMP_YEAR
+     AS (SELECT Row_number() OVER( partition BY emp_no ORDER BY sdate ) AS num,
+                *
+         FROM   C_SMO_EMP_YEAR
+         -- 資料量太大需要先過濾
+         WHERE  emp_no IN ( '0003212' )),
+     CHANGE_EMP_YEAR
+     AS (SELECT ref.emp_no,
+                Isnull(Max(nex.num), 1) AS cnum
+         FROM   N_EMP_YEAR ref
+                LEFT JOIN N_EMP_YEAR nex ON nex.emp_no = ref.emp_no AND nex.num = ref.num + 1
+         WHERE  ( nex.num IS NOT NULL AND nex.title != ref.title )
+                 OR ( nex.num IS NULL AND ref.num = 1 )
+         GROUP  BY ref.emp_no)
+
+SELECT y.emp_no,
+       Sum(y.[year]) AS [year]
+FROM   N_EMP_YEAR y
+       INNER JOIN CHANGE_EMP_YEAR cy ON cy.emp_no = y.emp_no AND cy.cnum <= y.num
+GROUP  BY y.emp_no
+HAVING y.emp_no IN ( '0003212' ) 
+```
+
+### 透過正規表示法尋找數字陣列的 JSON 是否包含指定數字
+
+```sql
+SELECT * 
+FROM   [TableName] 
+WHERE  [ColumnName] LIKE '%[\[,]' + '12345' + '[,\]]%' ESCAPE '\' 
+```
+
+### GROUP BY + ORDER BY + TOP 1
+
+```sql
+SELECT * 
+FROM   (SELECT Row_number() OVER( partition BY fr.ParentFormId, fr.ParentFieldName, fr.FormId, fr.[Name] ORDER BY ar.EndTime DESC ) AS i, 
+               fr.*
+        FROM   FlowApplicationRecord ar 
+               INNER JOIN FlowFormFieldRecord fr ON ar.Id = fr.ApplicationRecordId
+        WHERE  ApplicationId = @ApplicationId ) t 
+WHERE  i = 1 AND AfterValueJson IS NOT NULL 
+```
+
+### UPDATE + SELECT (更新選單排序為連續數字)
+
+```sql
+UPDATE [Menu] 
+SET    Sort = t.RowNumber 
+FROM   (SELECT Id, Row_number() OVER (ORDER BY Sort) RowNumber 
+        FROM   [Menu] 
+        WHERE  ParentId = '3A2F26FB-762A-4453-BA58-88BA47FA907E') t 
+WHERE  t.Id = [Menu].Id 
+```
+
+### 以資料表的值作為欄位名稱 (PIVOT)
+
+```sql
+SELECT *
+FROM   (SELECT -- 分群欄位
+               word_key,
+               -- 轉置欄位
+               lang,
+               -- 轉置欄位內容
+               word_value
+        FROM   [OSISLanguage]) t
+       PIVOT (-- 轉置欄位內容彙總
+              Max(word_value)
+              -- 轉置欄位的值 (作為轉置後的欄位名稱)
+              FOR lang IN ([TW], [CN], [EN], [VN])) p
 ```
