@@ -76,6 +76,10 @@
 
 * [General](sql/general.md)
 
+## NodeJS
+
+* [npm install](nodejs/npm-install.md)
+
 ## Design Pattern
 
 * [Creational patterns](design-pattern/creational-patterns/README.md)
@@ -106,3 +110,8 @@
 ## GitBook
 
 * [General](gitbook/general.md)
+
+***
+
+* [Tools](tools/README.md)
+  * [Command Line](tools/command-line.md)
