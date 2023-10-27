@@ -20,3 +20,25 @@ ex. 套用 Release 環境執行 Update-Database
 $env:ASPNETCORE_ENVIRONMENT='Production'
 Update-Database
 ```
+
+## 基本指令 (CLI)
+
+安裝 dotnet-ef
+```
+dotnet tool install --global dotnet-ef
+```
+
+建立第一個 migration
+```
+dotnet ef migrations add InitialCreate --output-dir "Data\Migrations"
+```
+
+健力第二個之後的 migration
+```
+dotnet ef migrations add 001
+```
+
+將 migration 更新到資料庫
+```
+dotnet ef database update
+```

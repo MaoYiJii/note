@@ -1,12 +1,12 @@
 # General
 
-### byte\[] to Stream
+## byte\[] to Stream
 
 ```cs
 var stream = new MemoryStream(bytes)
 ```
 
-### 解析 CSV 檔
+## 解析 CSV 檔
 
 參考組件 Microsoft.VisualBasic 參考命名空間 Microsoft.VisualBasic.FileIO
 
@@ -25,7 +25,7 @@ using (TextFieldParser parser = new TextFieldParser(new System.IO.StringReader(t
 }
 ```
 
-### 讀取 Excel (NPOI)
+## 讀取 Excel (NPOI)
 
 ```cs
 IWorkbook workbook;
@@ -50,7 +50,7 @@ for (var i = 1; i <= sheet.LastRowNum; i++)
 }
 ```
 
-### 把參數化的 SQL 轉成純字串的 SQL
+## 把參數化的 SQL 轉成純字串的 SQL
 
 ```cs
 private string ToConstSql(string sql, Dictionary<string, object> param)
@@ -105,7 +105,7 @@ private string ToConstValue(object paramValue)
 }
 ```
 
-### 壓縮檔案
+## 壓縮檔案
 
 ```cs
 // 儲存檔案至暫存目錄
@@ -138,18 +138,16 @@ fileName = $"{fileName.Substring(0, extIndex)}.zip";
 return resultBytes;
 ```
 
-### Regular (Regex)
+## Regular (Regex)
 
-#### 用正規表示法驗證字串
+### 用正規表示法驗證字串
 
 ```cs
 Regex.IsMatch(input, pattern);
 Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase);
 ```
 
-#### 用正規表示法解析字串
-
-解析
+### 用正規表示法解析字串
 
 ```cs
 Regex pattern = new Regex(@"<!--\s*#include\s*file\s*=\s*""(?<path>\S+)""\s*-->");
@@ -160,7 +158,7 @@ if (pattern.IsMatch(text))
 }
 ```
 
-#### 多次匹配
+### 多次匹配
 
 ```cs
 Regex pattern = new Regex(@"<!--\s*#include\s*file\s*=\s*""(?<path>([^""])+)""\s*-->");
@@ -173,7 +171,7 @@ if (pattern.IsMatch(text))
 }
 ```
 
-#### 用正規表示法替換文字
+### 用正規表示法替換文字
 
 用 Dictionary 替換掉所有 \[Key] 的文字
 
@@ -186,7 +184,72 @@ Regex.Replace(input, @"\[([^\]]*)\]", match =>
 });
 ```
 
-### 簡體與繁體互相轉換
+## 全形半形互相轉換
+
+``` cs
+/// <summary>
+/// 半形轉全形
+/// </summary>
+public string ToWide(string text)
+{
+    if (text == null)
+    {
+        return null;
+    }
+    StringBuilder stringBuilder = new StringBuilder();
+    foreach (var c in text)
+    {
+        // 全形空格為 12288，半形空格為 32
+        if (c == 32)
+        {
+            stringBuilder.Append((char)12288);
+        }
+        // 其他字元半形 (33-126) 與全形 (65281-65374) 的對應關係是：均相差 65248
+        else if (33 <= c && c < 127)
+        {
+            stringBuilder.Append((char)(c + 65248));
+        }
+        // 非半形不用轉
+        else
+        {
+            stringBuilder.Append(c);
+        }
+    }
+    return stringBuilder.ToString();
+}
+/// <summary>
+/// 全形轉半形
+/// </summary>
+public string ToNarrow(string text)
+{
+    if (text == null)
+    {
+        return null;
+    }
+    StringBuilder stringBuilder = new StringBuilder();
+    foreach (var c in text)
+    {
+        // 全形空格為 12288，半形空格為 32
+        if (c == 12288)
+        {
+            stringBuilder.Append((char)32);
+        }
+        // 其他字元半形 (33-126) 與全形 (65281-65374) 的對應關係是：均相差 65248
+        else if (65281 <= c && c < 65375)
+        {
+            stringBuilder.Append((char)(c - 65248));
+        }
+        // 非半形不用轉
+        else
+        {
+            stringBuilder.Append(c);
+        }
+    }
+    return stringBuilder.ToString();
+}
+```
+
+## 簡體與繁體互相轉換
 
 ```cs
 const int LocaleSystemDefault = 0x0800;
@@ -213,7 +276,75 @@ public string ToTraditional(string source)
 }
 ```
 
-### 在不完整 (非 http 開頭) 的 Url 加上 QueryString
+## 從 Base64 計算檔案大小
+
+``` cs
+/// <summary>
+/// 從 Base64 計算檔案大小
+/// </summary>
+/// <param name="base64"></param>
+/// <returns>檔案大小 (B)</returns>
+public int CalculateBase64Size(string base64)
+{
+    if (string.IsNullOrEmpty(base64))
+    {
+        return 0;
+    }
+    return (3 * (base64.Length / 4)) - Regex.Match(base64, "={1,2}$").Value.Length;
+}
+```
+
+## 以物件的屬性名稱來做 string.Format
+
+``` cs
+/// <summary>
+/// 以物件的屬性名稱來做 string.Format
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="format"></param>
+/// <param name="param"></param>
+/// <param name="ignoreCase">匹配屬性名稱是否忽略大小寫</param>
+/// <returns></returns>
+public string NamedFormat<T>(string format, T param, bool ignoreCase = true) where T : class
+{
+    if (format == null)
+    {
+        throw new ArgumentNullException(nameof(format));
+    }
+    var nameValues = param as IDictionary<string, object>;
+    if (nameValues == null)
+    {
+        if (param == null)
+        {
+            nameValues = typeof(T).GetProperties().ToDictionary<PropertyInfo, string, object>(
+                x => x.Name,
+                x => null,
+                ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        }
+        else
+        {
+            nameValues = typeof(T).GetProperties().ToDictionary(
+                x => x.Name,
+                x => x.GetValue(param),
+                ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        }
+    }
+    Regex regex = new Regex($@"(?>{{{{|{{(?<name>{string.Join("|", nameValues.Keys.Select(x => Regex.Escape(x)))})}}|}}}})", ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
+    return regex.Replace(format, x =>
+    {
+        switch (x.Value)
+        {
+            case "{{":
+                return "{";
+            case "}}":
+                return "}";
+        }
+        return nameValues[x.Groups["name"].Value]?.ToString();
+    });
+}
+```
+
+## 在不完整 (非 http 開頭) 的 Url 加上 QueryString
 
 ```cs
 if (data != null)
@@ -255,9 +386,9 @@ if (data != null)
 }
 ```
 
-### Struct
+## Struct
 
-#### 實值型別+隱含轉換
+### 實值型別+隱含轉換
 
 ```cs
 public struct ResourceLinksType

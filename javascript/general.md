@@ -1,6 +1,18 @@
 # General
 
-### 字串比對 (字串排序)
+## Json
+
+### 序列化
+``` js
+var json = JSON.stringify(obj);
+```
+
+### 反序列化
+``` js
+var obj = JSON.parse(json);
+```
+
+## 字串比對 (字串排序)
 
 [localeCompare](https://www.techonthenet.com/js/string\_localecompare.php)
 
@@ -11,7 +23,7 @@ str1.localeCompare(str2, undefined, { sensitivity: 'accent' })
 str1.localeCompare(str2, undefined, { numeric: true })
 ```
 
-### 日期處理
+## 日期處理
 
 取得 N 個月前 1 號到今天
 
@@ -47,13 +59,15 @@ function addMonths(target, months, carry) {
 }
 ```
 
-### 改變 Url (不跳轉)
+## 改變 Url (不跳轉)
 
 ```js
 window.history.pushState("", "", getPageData("AppVirtualPath") + "Profile/Index");
 ```
 
-### 變更 Url 的 QueryString (跳轉)
+## 頁面跳轉
+
+### 變更 QueryString
 
 ```js
 var url = new URL(location.href);
@@ -92,7 +106,7 @@ $.ajax({
 });
 ```
 
-### 連結的 active 隨著捲軸變動
+## 連結的 active 隨著捲軸變動
 
 ```html
 <style>
@@ -182,7 +196,7 @@ $.ajax({
 </script>
 ```
 
-### 以按鈕控制卷軸
+## 以按鈕控制卷軸
 
 ```html
 <style type="text/css">
@@ -260,7 +274,7 @@ $.ajax({
 </script>
 ```
 
-### 子母頁面互相傳值
+## 子母頁面互相傳值
 
 ```html
 <h2>Test1</h2>
