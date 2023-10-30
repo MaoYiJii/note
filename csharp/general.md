@@ -276,15 +276,15 @@ public string ToTraditional(string source)
 }
 ```
 
-### 從檔案名稱取得 MIME 類型
+## 從檔案名稱取得 MIME 類型
 
-.NET Framework 4.5
+### .NET Framework 4.5
 
 ```cs
 MimeMapping.GetMimeMapping(fileName)
 ```
 
-.NET Core
+### .NET Core
 
 ```cs
 new FileExtensionContentTypeProvider().TryGetContentType(fileName, out string contentType)
