@@ -4,7 +4,7 @@
 
 ## C# <a href="#csharp" id="csharp"></a>
 
-* [General](<README (1).md>)
+* [General](csharp/general.md>)
 * [Reflection](csharp/reflection/README.md)
   * [Assembly](csharp/reflection/assembly.md)
 * [Security](csharp/security.md)
