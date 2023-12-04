@@ -35,6 +35,7 @@
   * [CodeAnalysis](csharp/.net-core/codeanalysis.md)
   * [System.Text.Json](csharp/.net-core/system.text.json.md)
   * [Crawler](csharp/.net-core/crawler.md)
+  * [NPOI](csharp/.net-core/npoi.md)
 * [WPF](csharp/wpf/README.md)
   * [Animation](csharp/wpf/animation.md)
   * [BackgroundWorker](csharp/wpf/backgroundworker.md)
