@@ -25,31 +25,6 @@ using (TextFieldParser parser = new TextFieldParser(new System.IO.StringReader(t
 }
 ```
 
-## 讀取 Excel (NPOI)
-
-```cs
-IWorkbook workbook;
-using (var fileStream = new FileStream(request.filePath, FileMode.Open, FileAccess.ReadWrite))
-{
-    workbook = WorkbookFactory.Create(fileStream);
-}
-ISheet sheet = workbook.GetSheet("SheetName");
-// i = 1 是從第二行開始讀取
-for (var i = 1; i <= sheet.LastRowNum; i++)
-{
-    var row = sheet.GetRow(i);
-    // 知道幾列的話直接寫固定的 index
-    string s1 = row.GetCell(0)?.ToString().Trim();
-    string s2 = row.GetCell(1)?.ToString().Trim();
-    string s3 = row.GetCell(2)?.ToString().Trim();
-    // 不知道總共幾列的話，可以用 row.LastCellNum
-    for (var j = 0; j <= row.LastCellNum; j++)
-    {
-        string s = row.GetCell(j)?.ToString().Trim();
-    }
-}
-```
-
 ## 把參數化的 SQL 轉成純字串的 SQL
 
 ```cs
