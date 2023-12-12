@@ -8,6 +8,7 @@
 * [Reflection](csharp/reflection/README.md)
   * [Assembly](csharp/reflection/assembly.md)
 * [Security](csharp/security.md)
+* [Dapper](csharp/dapper.md)
 * [.NET Framework](csharp/.net-framework/README.md)
   * [ASP.NET MVC](csharp/.net-framework/asp.net-mvc/README.md)
     * [HttpClient](csharp/.net-framework/asp.net-mvc/httpclient.md)
