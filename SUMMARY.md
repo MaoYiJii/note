@@ -54,6 +54,7 @@
 * [Regular (Regex)](javascript/regular-regex.md)
 * [JQuery](javascript/jquery/README.md)
   * [jquery-tmpl](javascript/jquery/jquery-tmpl.md)
+* [Typescript](javascript/typescript.md)
 * [Lodash](javascript/lodash.md)
 * [Bootstrap 4](javascript/bootstrap-4.md)
 * [Bootstrap TreeView](javascript/bootstrap-treeview.md)
@@ -79,6 +80,7 @@
 ## SQL
 
 * [General](sql/general.md)
+* [SQL Server Integration Services (SSIS)](sql/ssis.md)
 
 ## NodeJS
 
@@ -101,6 +103,7 @@
 ## Visual Studio
 
 * [Code Snippets](visual-studio/code-snippets.md)
+* [Code Analysis](visual-studio/code-analysis.md)
 
 ## Git
 

@@ -43,3 +43,34 @@
 但是 `\1` `\2` 放在裡面會變成排除常數 `1` 或 `2`，因此想要排除 `\1` 可以將 `[^\1]` 調整為 `((?!\1).)`
 
 [https://stackoverflow.com/questions/18242119/general-approach-for-equivalent-of-backreferences-within-character-class](https://stackoverflow.com/questions/18242119/general-approach-for-equivalent-of-backreferences-within-character-class)
+
+
+## 實際範例
+
+### 檢查 C# 程式碼可能的 SQL Injection
+
+- 普通情境
+  ```
+  (?<=(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|EXEC)[^"]+)'[^"'\r\n]*("\s*\+|{)
+  ```
+- 廣泛情境 (誤判會比較多)
+  ``` regex
+  ((?<=[\WN])'([^"'\r\n]*("\s*\+|{)|\s*"(;|\)))|'\\'')
+  ```
+  可匹配的對象
+  ``` cs
+  "[name] = '" + name + "'"
+  "[name] = N'" + name + "'"
+  "[name] LIKE '%" + name + "%'"
+  "[name] LIKE N'%" + name + "%'"
+  "[name] LIKE 'A" + name + "'"
+  "[name] LIKE '" + name + "Z'"
+  string.Format("[name] = '{0}'", name)
+  string.Format("[name] LIKE '%{0}%'", name)
+  $"[name] = '{name}'"
+  $"[name] LIKE '%{name}%'"
+  stringBuilder.Append("'").Append(name).Append("'");
+  stringBuilder.Append('\'').Append(name).Append('\'');
+  // 誤判
+  XmlNode xmlNode = xmlElement.SelectSingleNode("div[id='" + id + "']");
+  ```
