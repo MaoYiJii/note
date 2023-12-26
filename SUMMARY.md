@@ -51,6 +51,7 @@
 ## Javascript
 
 * [General](javascript/general.md)
+* [Module](javascript/module.md)
 * [Regular (Regex)](javascript/regular-regex.md)
 * [JQuery](javascript/jquery/README.md)
   * [jquery-tmpl](javascript/jquery/jquery-tmpl.md)
