@@ -21,6 +21,18 @@ $env:ASPNETCORE_ENVIRONMENT='Production'
 Update-Database
 ```
 
+## 基本指令 (Visual Studio)
+
+建立第一個 migration
+```
+Add-Migration InitialCreate -OutputDir Data\Migrations
+```
+
+建立第二個之後的 migration
+```
+Add-Migration 001
+```
+
 ## 基本指令 (CLI)
 
 安裝 dotnet-ef
@@ -33,7 +45,7 @@ dotnet tool install --global dotnet-ef
 dotnet ef migrations add InitialCreate --output-dir "Data\Migrations"
 ```
 
-健力第二個之後的 migration
+建立第二個之後的 migration
 ```
 dotnet ef migrations add 001
 ```
