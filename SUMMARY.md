@@ -63,7 +63,7 @@
 * [Select2](javascript/select2.md)
 * [CKEditor 4](javascript/ckeditor-4.md)
 * [SweetAlert2](javascript/sweetalert2.md)
-* [Intro.js 6](javascript/intro.js-6.md)
+* [Intro.js 7](javascript/intro.js-7.md)
 * [AdminLTE 3](javascript/adminlte-3.md)
 * [Vue 2](javascript/vue-2/README.md)
   * [General](javascript/vue-2/general.md)
