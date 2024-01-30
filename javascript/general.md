@@ -12,15 +12,28 @@ var json = JSON.stringify(obj);
 var obj = JSON.parse(json);
 ```
 
-## 字串比對 (字串排序)
+## 字串比對與排序
 
 [localeCompare](https://www.techonthenet.com/js/string\_localecompare.php)
 
-```
+``` js
 // 忽略大小寫
 str1.localeCompare(str2, undefined, { sensitivity: 'accent' })
 // 以數字排序
 str1.localeCompare(str2, undefined, { numeric: true })
+```
+
+字串排序
+``` js
+[8, 10, 7, 9].sort()
+```
+純數字排序
+``` js
+[8, 10, 7, 9].sort((a, b) => a - b)
+```
+數字排序+字串排序
+``` js
+[8, 10, 7, 9].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }))
 ```
 
 ## 日期處理

@@ -70,7 +70,8 @@
   * [Typescript](javascript/vue-2/typescript.md)
   * [Class Bindings](javascript/vue-2/class-bindings.md)
   * [Component](javascript/vue-2/component.md)
-  * [BootstrapVue](javascript/vue-2/bootstrapvue.md)
+  * [BootstrapVue](javascript/vue-2/bootstrapvue/README.md)
+    * [BTable](javascript/vue-2/bootstrapvue/btable.md)
   * [PortalVue 3](javascript/vue-2/portalvue-3.md)
 * [Vue 3](javascript/vue-3.md)
 
