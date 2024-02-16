@@ -121,3 +121,55 @@ npm install @types/jquery --save-dev
 ```js
 import $ from 'jquery';
 ```
+
+
+## 存取 Cookie
+
+### vue-cookies
+
+啟用
+``` ts
+import VueCookies from 'vue-cookies'
+app.use(VueCookies);
+```
+取得 Vue Instance
+``` ts
+const { proxy } = getCurrentInstance()!;
+```
+設置 cookie
+``` ts
+proxy!.$cookies.set('name', 'value');
+```
+取得 cookie
+``` ts
+proxy!.$cookies.get('name');
+```
+刪除 cookie
+``` ts
+proxy!.$cookies.remove('name');
+```
+
+### vue3-cookies
+
+啟用
+``` ts
+import VueCookies from 'vue3-cookies'
+app.use(VueCookies);
+```
+取得 API
+``` ts
+import { useCookies } from 'vue3-cookies'
+const { cookies } = useCookies();
+```
+設置 cookie
+``` ts
+cookies.set('name', 'value');
+```
+取得 cookie
+``` ts
+cookies.get('name');
+```
+刪除 cookie
+``` ts
+cookies.remove('name');
+```
