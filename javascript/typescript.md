@@ -36,6 +36,13 @@ const key: keyof typeof foo = "bar";
 console.log(foo[key]);
 ```
 
+## 物件操作
+
+### 以 key, value 做 forEach
+
+``` ts
+for (let [key, value] of Object.entries(foo))
+```
 
 ## 泛型
 
@@ -109,4 +116,49 @@ let foo: (arg: number) => number = function(arg: number): number {
   return arg + 1;
 }
 let bar = foo(1);
+```
+
+## Class
+
+### 讓 class 初始化可以設定屬性
+
+在 C# 中 new 可以設定物件的屬性值
+``` cs
+var foo = new Foo() { Bar = "bar", Baz = "baz" };
+```
+在 Typescript 中無法這麼使用
+
+通常需要 new 出來之後才可以設定屬性
+``` ts
+const foo = new Foo();
+foo.Bar = 'bar';
+foo.Baz = 'baz';
+```
+但通常在寫箭頭函數都想要一行解決
+
+如果沒有辦法修改 class 的內容可以這麼處理
+```
+const foo = Object.assign(new Foo(), {
+  Bar: 'bar',
+  Baz: 'baz'
+});
+```
+
+如果可以修改 class 那麼可以在 `constructor` 加入一個 `Partial<T>` 的參數搭配 `Object.assign`
+來讓參數可以設定屬性的值
+``` ts
+class Foo {
+  bar?: string;
+  baz?: string;
+  constructor(init?: Partial<Foo>) {
+    Object.assign(this, init);
+  }
+}
+```
+然後就可以這麼使用了
+``` ts
+const foo = new Foo({
+  Bar: 'bar',
+  Baz: 'baz'
+});
 ```
