@@ -33,6 +33,7 @@
     * [Entity Framework Core](csharp/.net-core/asp.net-core/entity-framework-core.md)
     * [Razor Pages](csharp/.net-core/asp.net-core/razor-pages.md)
     * [Blazor](csharp/.net-core/asp.net-core/blazor.md)
+    * [AspectCore](csharp/.net-core/asp.net-core/aspectcore.md)
   * [CodeAnalysis](csharp/.net-core/codeanalysis.md)
   * [System.Text.Json](csharp/.net-core/system.text.json.md)
   * [Crawler](csharp/.net-core/crawler.md)
@@ -106,6 +107,10 @@
 
 * [Code Snippets](visual-studio/code-snippets.md)
 * [Code Analysis](visual-studio/code-analysis.md)
+
+## Visual Studio Code
+
+* [General](visual-studio-code/general.md)
 
 ## Git
 

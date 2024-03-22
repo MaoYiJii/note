@@ -80,3 +80,21 @@ npm install moment
 npm install vue-i18n@9
 npm install sweetalert2
 ```
+
+
+### 使用 setup 時，將 inheritAttrs 設為 false
+
+在 vue3 專案中
+``` vue
+<script lang="ts" setup>
+import { defineOptions } from 'vue'
+
+defineOptions({
+  inheritAttrs: false
+});
+```
+
+在 vite 的專案中
+``` vue
+<script lang="ts" setup inherit-attrs="false">
+```

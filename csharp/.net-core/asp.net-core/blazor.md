@@ -4,7 +4,7 @@
 
 **這會在 View 跑過一遍之後才執行，所以有物件在這個方法才取到值的，要判斷是否為 null**
 
-```razor
+``` razor
 @code {
     protected override async Task OnInitializedAsync()
     {
@@ -26,8 +26,14 @@
 ### 加入 ApiController
 
 在 Startup.cs 找到這段加入 MapControllers
-
-app.UseEndpoints(endpoints => { endpoints.MapControllers(); endpoints.MapBlazorHub(); endpoints.MapFallbackToPage("/\_Host"); });
+``` cs
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapBlazorHub();
+    endpoints.MapFallbackToPage("/\_Host");
+});
+```
 
 ### Runtime Compile
 

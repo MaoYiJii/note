@@ -50,6 +50,11 @@ dotnet ef migrations add InitialCreate --output-dir "Data\Migrations"
 dotnet ef migrations add 001
 ```
 
+刪除指定名稱的 migration
+```
+dotnet ef migrations remove 001
+```
+
 將 migration 更新到資料庫
 ```
 dotnet ef database update

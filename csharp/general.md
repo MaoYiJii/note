@@ -251,6 +251,11 @@ public string ToTraditional(string source)
 }
 ```
 
+## 取得不能作為檔案名稱的字元
+``` cs
+Path.GetInvalidFileNameChars()
+```
+
 ## 從檔案名稱取得 MIME 類型
 
 ### .NET Framework 4.5
