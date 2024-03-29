@@ -41,3 +41,8 @@ function addMonths(target, months, carry) {
     }
 }
 ```
+
+### 改變 Url (不跳轉)
+``` js
+window.history.pushState("", "", getPageData("AppVirtualPath") + "Profile/Index");
+```

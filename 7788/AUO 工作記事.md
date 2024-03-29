@@ -41,7 +41,7 @@ Adp+01141
 
 | 名稱   | 帳號          | 工號    | 備註                     |
 | ------ | ------------- | ------- | ------------------------ |
-| <b>ADTBA3</b>
+| <b>ADTBA3</b> |
 |        | vickeychen    | 0104450 |                          |
 | 美玲   | MeilingChen   | 1704218 |                          |
 | 凱心   | WinnieChung   | 1706032 |                          |
@@ -78,23 +78,7 @@ Adp+01141
 | AUOHQHRMTT01 | eCareerJourney   | ueCareerJourney | ueCareerJourney     |      |
 | AUOHQHRMTT01 | eOffering_Global | ueoffer         | eoffer123           |      |
 | AUOHQHRMTT01 | HrTmplSE         | uHrTmplSE       | uHrTmplSE#123       |      |
-
-## ADTBA3 做事準則
-
- - 系統改寫不需要修正任何錯誤，以後發生錯誤都是舊系統的錯
- - 系統改寫不要自己做優化，要優化請 PM 提如何改動的規格，規格要很完整，按鈕放哪畫面怎麼顯示要有圖才做，否則一律說聽不懂
- - 任何 PM 提出的需求如果太複雜不要花時間自己思考，一律說聽不懂，讓 PM 說個幾十次產出很完整的文件，連小學生都看得懂才開始動工
- - 一件簡單的事情不要一次花 3 分鐘就解決，不然 V 會覺得你沒在做事，一定要故意做錯 3 次以上花個好幾天，最好 PM 會去跟 V 抱怨，這樣 V 才會覺得你花很多時間在處理一個很困難的問題
- - 如果 PM 說你的程式有問題
-   1. 如果是從舊系統改寫的就說舊系統本來就這樣 (不用先看是不是自己改寫錯)
-   2. 如果那個是公用程式，就說我只是照著大家這樣做而已，為什麼別人不會錯就我的錯，一定要推去給別人修，別人修完複製過來就好，後續還有問題也是別人改錯
-   3. 如果是從哪裡複製過來的就說源頭就是這樣做，反正錯一定不是自己
-   4. 如果真的沒有人可以推，就說自己記憶力很差，昨天寫的程式今天就會忘記，所以不知道寫了什麼，然後 PM 跟你解釋一堆就開始裝傻聽不懂，一定要讓 PM 很細節的操作重現才開始修正
- - 正式機上面的錯誤如果沒有在測試機上沒有錯，就說測試機上沒有錯就好，PM 解釋一堆只需要跟他鬼打牆說測試機沒有錯就好，如果 PM 要開正式環境給你，就說這樣做會有風險或造成資料錯誤衍生的問題等等，一定要讓 PM 想辦法把問題弄回測試機才開始看程式
- - 自己的程式錯誤推給別人修好搬回自己的系統之後，完全不需要去看別人修了什麼，但一定要寫一封信件 CC 給 V 說自己把系統修得多好，這樣 V 就會覺得你很有能力，以後連假提前請假搭車 V 才會讓你之後每天加班半小時補回來
- - 如果你的外包同事或比你資歷淺的 PM 跟你說一個你沒聽過的東西，不要讓他講太多話，說兩句就說你知道他想表達什麼叫他不要再講了，然後用一個你覺得很像但可能完全不相關的東西開始天南地北的講一堆，然後開始否定對方講的東西甚至人生攻擊都沒關係，反正不要讓結果是自己需要花額外的時間去學新東西
- - 如果你的主管或比你資深的 PM 跟你說一個你沒聽過的東西，你就用一堆感覺相關的專業術語虎的他一楞一楞的接不上話感覺那東西你熟的不能再熟，然後真的工作下來讓 PM 把規格開的連小學生都看得懂在開始做就好，千萬不要覺得自己需要學新東西
- - 不要覺得用以上方式做事的人有問題，當你覺得這個是問題想反應給你的主管或 PM，他們只會覺得提出問題的人是問題，他們想要解決的只有你而不是那個什麼事情都不做的人，然後你的主管會覺得你是不是沒事做才會想一堆有的沒的，想要多排一些事給你做
+| MAZ-ODEVDB01 | SmartOrg         | usmartorg       | usmartorg@tspwd     |      |
 
 ## 解決方案
 
@@ -148,8 +132,8 @@ Adp+01141
 ### npm
 設置 proxy
 ```
-npm config set proxy http://AUO%5CKaiHuangAres:Auo%2B0322@auohqwsg.corpnet.auo.com:8080
-npm config set https-proxy http://AUO%5CKaiHuangAres:Auo%2B0322@auohqwsg.corpnet.auo.com:8080
+npm config set proxy http://AUO%5CKaiHuangAres:Auo%2B0422Auo%2B0422@auohqwsg.corpnet.auo.com:8080
+npm config set https-proxy http://AUO%5CKaiHuangAres:Auo%2B0422Auo%2B0422@auohqwsg.corpnet.auo.com:8080
 npm config set strict-ssl false
 ```
 
@@ -166,6 +150,19 @@ nuget.exe config -set http_proxy.user=AUO\KaiHuangAres
 nuget.exe config -set http_proxy.password=Auo+0322
 ```
 
+### VS Code
+設置 Proxy  
+點擊左下角的 `齒輪 > Settings`  
+再點擊右上角的 `Open Settings (JSON)`  
+補上下面三個參數
+```
+{
+    "http.proxy": "http://AUO%5CKaiHuangAres:Auo%2B0322Auo%2B0322@auohqwsg.corpnet.auo.com:8080",
+    "https.proxy": "http://AUO%5CKaiHuangAres:Auo%2B0322Auo%2B0322@auohqwsg.corpnet.auo.com:8080",
+    "http.proxyStrictSSL": false
+}
+```
+或是在 `Settings` 的介面中找到 `Application > Proxy` 進行設置
 
 
 ### 產多國語資源檔
@@ -201,10 +198,6 @@ dotnet run --project "D:\KaiHuangAres\Workspace\n6vt-prototype\API"
 
 ## 專案進度
 
-### PYPortal
-
-
-
 ### eOffering
 
 基礎工程
@@ -225,26 +218,36 @@ dotnet run --project "D:\KaiHuangAres\Workspace\n6vt-prototype\API"
  - [A-Team考核(試用/期滿) / 說明文件](http://auohqhrmaptt01.corpnet.auo.com/eOffering/WebForm/ATeamTrial/Help.aspx)
  - [A-Team考核項目](http://auohqhrmaptt01.corpnet.auo.com/eOffering/SysWebForm/ATeamTrial/TrialItem.aspx)
 
-新舊程式對應
-| 舊系統                                        | 新系統                                                  | 備註                                                                     |
-| --------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------ |
-| ~/HRDWebForm/NTDs/Checklist/CheckEdit.ascx    | ~\Areas\Hrd\Views\Ntds\ChecklistEdit.cshtml             |                                                                          |
-| ~/HRDWebForm/NTDs/Improve/Performance.ascx    | ~\Areas\Hrd\Views\Ntds\ImproveEdit.cshtml               |                                                                          |
-| ~/HRDWebForm/NTDs/NewComer/ComerApprover.ascx | ~\Areas\Hrd\Views\Ntds\_ComerApprover.cshtml            |                                                                          |
-| ~/HRDWebForm/NTDs/NewComer/ComerBossEdit.ascx |                                                         | 舊程式僅 ComerApprover.ascx 用到，所以新程式整合在 _ComerApprover.cshtml |
-| ~/HRDWebForm/NTDs/NewComer/ComerEdit.ascx     | ~\Areas\Hrd\Views\Ntds\NewComerEdit.cshtml              |                                                                          |
-| ~/HRDWebForm/NTDs/HRDViewComer.aspx           | ~\Areas\Hrd\Views\Shared\ViewComer.cshtml               |                                                                          |
-| ~/HRDWebForm/NTDs/HRDViewImprove.aspx         | ~\Areas\Hrd\Views\Shared\ViewImprove.cshtml             |                                                                          |
-| ~/HRDWebForm/NTDs/WorkEdit/ProjectEdit.ascx   | ~\Areas\Hrd\Views\Ntds\_ProjectEdit.cshtml              |                                                                          |
-| ~/HRDWebForm/NTDs/WorkEdit/EmpInfo.ascx       | ~\Areas\Hrd\Views\Ntds\_EmpInfo.cshtml                  |                                                                          |
-| ~/HRDWebForm/NTDs/QAdmin.ascx                 | ~\Areas\Hrd\Views\Ntds\QueryAdmin.cshtml                |                                                                          |
-| ~/HRDWebForm/NTDs/Query_admin.aspx            | ~\Areas\Hrd\Views\Ntds\QueryAdmin.cshtml                |                                                                          |
-| ~/SysWebForm/Help/PublicList.ascx             | ~\Areas\Hrd\Views\Shared\HelpList.cshtml                | My:help (設定在 Web.config)                                              |
-| ~/HRDWebForm/NTDs/NewComer/TrialComer.ascx    | ~\Areas\Hrd\Views\Trial\_Comer.cshtml                   |                                                                          |
-| ~/WebForm/Trial/Form.ascx                     | ~\Areas\Hrd\Views\Trial\_Form.cshtml                    |                                                                          |
-| ~/CustomControl/UploadControlFLMV2.ascx       | ~/Views/Shared/VueComponents/EofferTransferPopup.cshtml |                                                                          |
-| ~/ApproveForm/Common/TransferPopup.ascx       | ~/Views/Shared/VueComponents/EofferUploadFlmV2.cshtml   |                                                                          |
+招募任用
+ - [說明文件](http://auohqhrmaptt01.corpnet.auo.com/eOffering/WebForm/Recommend/Help.aspx)
+ - [新增人才推薦單](http://auohqhrmaptt01.corpnet.auo.com/eOffering/WebForm/Recommend/Apply.aspx)
+ - [查詢人才推薦單](http://auohqhrmaptt01.corpnet.auo.com/eOffering/WebForm/Recommend/Query.aspx)
 
+新舊程式對應
+| 舊系統                                        | 新系統                                                    | 備註                                                                     |
+| --------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
+| ~/HRDWebForm/NTDs/Checklist/CheckEdit.ascx    | ~\Areas\Hrd\Views\Ntds\ChecklistEdit.cshtml               |                                                                          |
+| ~/HRDWebForm/NTDs/Improve/Performance.ascx    | ~\Areas\Hrd\Views\Ntds\ImproveEdit.cshtml                 |                                                                          |
+| ~/HRDWebForm/NTDs/NewComer/ComerApprover.ascx | ~\Areas\Hrd\Views\Ntds\_ComerApprover.cshtml              |                                                                          |
+| ~/HRDWebForm/NTDs/NewComer/ComerBossEdit.ascx |                                                           | 舊程式僅 ComerApprover.ascx 用到，所以新程式整合在 _ComerApprover.cshtml |
+| ~/HRDWebForm/NTDs/NewComer/ComerEdit.ascx     | ~\Areas\Hrd\Views\Ntds\NewComerEdit.cshtml                |                                                                          |
+| ~/HRDWebForm/NTDs/HRDViewComer.aspx           | ~\Areas\Hrd\Views\Shared\ViewComer.cshtml                 |                                                                          |
+| ~/HRDWebForm/NTDs/HRDViewImprove.aspx         | ~\Areas\Hrd\Views\Shared\ViewImprove.cshtml               |                                                                          |
+| ~/HRDWebForm/NTDs/WorkEdit/ProjectEdit.ascx   | ~\Areas\Hrd\Views\Ntds\_ProjectEdit.cshtml                |                                                                          |
+| ~/HRDWebForm/NTDs/WorkEdit/EmpInfo.ascx       | ~\Areas\Hrd\Views\Ntds\_EmpInfo.cshtml                    |                                                                          |
+| ~/HRDWebForm/NTDs/QAdmin.ascx                 | ~\Areas\Hrd\Views\Ntds\QueryAdmin.cshtml                  |                                                                          |
+| ~/HRDWebForm/NTDs/Query_admin.aspx            | ~\Areas\Hrd\Views\Ntds\QueryAdmin.cshtml                  |                                                                          |
+| ~/SysWebForm/Help/PublicList.ascx             | ~\Areas\Hrd\Views\Shared\HelpList.cshtml                  | My:help (設定在 Web.config)                                              |
+| ~/HRDWebForm/NTDs/NewComer/TrialComer.ascx    | ~\Areas\Hrd\Views\Trial\_Comer.cshtml                     |                                                                          |
+| ~/WebForm/Trial/Form.ascx                     | ~\Areas\Hrd\Views\Trial\_Form.cshtml                      |                                                                          |
+| ~/SysWebForm/Mail/MailList.ascx               | ~\Areas\Hrd\Views\Trial\_MailList.cshtml                  |                                                                          |
+| ~/CustomControl/uc/EmpPopup2.ascx             | ~/Views/Shared/VueComponents/EofferEmpPopup2.cshtml       |                                                                          |
+| ~/CustomControl/uc/EmpPopup3.ascx             | ~/Views/Shared/VueComponents/EofferEmpPopup3.cshtml       |                                                                          |
+| ~/CustomControl/uc2/DoubleListPopup.ascx      | ~/Views/Shared/VueComponents/EofferDoubleListPopup.cshtml |                                                                          |
+| ~/CustomControl/uc2/SchoolPopup.ascx          | ~/Views/Shared/VueComponents/EofferSchoolPopup.cshtml     | My:SchoolPopup (設定在 Web.config)                                       |
+| ~/CustomControl/UploadControlFLMV2.ascx       | ~/Views/Shared/VueComponents/EofferUploadFlmV2.cshtml     |                                                                          |
+| ~/ApproveForm/Common/TransferPopup.ascx       | ~/Views/Shared/VueComponents/EofferTransferPopup.cshtml   |                                                                          |
+| ~/WebForm/Recommend/common/EducationV3.ascx   | ~/Views/Shared/VueComponents/EofferEducationV3.cshtml     | 舊版對應對話框 ~\CustomControl\uc2\SchoolPopup.ascx                      |
 
 
 找可以用 [改善計畫表編輯] 的人
@@ -576,60 +579,39 @@ datepicker
 ```
 
 
-### 工作計畫
+一般 SQL 擲回錯誤
 
-8 月
-    整理 Vue
-    
-    vue-devtools https://devtools.vuejs.org/guide/installation.html#using-global-package
-    
-    
-9 月
-    開始使用 React
-    
-整頁編輯 Sample
-PageListView
-
-單行編輯 Sample
-MenuListView
+RAISERROR("錯誤訊息", 16, 10);
 
 
-
-GroupID="trial" GroupKey='<%# Bind("upload_no") %>'
-Parameters.Add("upload_kind", GroupID);
-Parameters.Add("upload_no", GroupKey);
-
-
-
-期滿考核單申請
-    MyObj.LMSRecord(empno);
-    http://auhqhrapts1.corpnet.auo.com/mail/webservice/Warn_ForAteam.asmx
-    
-A-Team 試用考核
-    寄信說程式壞了，加1天
-    
-    
-find file and path as key
-di replace CommonService
-di replace HomeService
-di replace ManagerService
-
-broke Service
+1.2.1    PCMT
+1.2.4    PCMT
+1.3.1    PCMT
+1.4.1    PCMT
+1.4.3    CDAMS
+1.4.7    PCMT
+1.5.0    OSIS
+1.6.1    BossQuery
+1.6.3    BossQuery
+1.7.3    OSIS_TmplSE
+1.7.5    CDAMS
+1.7.6.1  HrTmplStudio
 
 
-https://stackoverflow.com/questions/25044166/how-to-clone-a-httprequestmessage-when-the-original-request-has-content
+\w+
+{\n    key: "$0",\n    label: "$0"\n},
 
 
-commit -> mutation
-dispatch -> action
+select * from PYPortal_TableLayout
+where layout_name = 'IDLSalHRAddUserList'
+and layout_region = 'body'
+order by col_index
+
+select * from PYPortal_Command where command_name = 'GetIDLSalHRAddUserList'
 
 
-ericmlyang 1806011
+delete PYPortal_Command where command_name in ('GetIDLSalHRAddProjectList', 'GetIDLSalHRAddStageList', 'GetIDLSalHRAddUserList')
+delete PYPortal_TableLayout where layout_name in ('IDLSalHRAddProjectList', 'IDLSalHRAddStageList', 'IDLSalHRAddUserList')
 
 
-
-
-filler
-resTag
-
-[github pages](https://MaoYiJii.github.io/note/)
+http://auohqhrmaptt01.corpnet.auo.com/PYPortal/

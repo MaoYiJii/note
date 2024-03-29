@@ -12,8 +12,9 @@ SET IDENTITY_INSERT [dbo].[{tableName}] OFF
 
 ### 查詢分頁資料
 ``` sql
-SELECT * FROM {tableName}
-ORDER BY {columnName}
+SELECT *
+FROM   {tableName}
+ORDER  BY {columnName}
 OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY
 ```
 
@@ -34,7 +35,10 @@ OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY
 ```
 
 ### partition
+``` sql
 SELECT Row_number() OVER( partition BY fr.ParentFormId, fr.ParentFieldName, fr.FormId, fr.[Name] ORDER BY ar.EndTime DESC )
+```
+
 
 ### for
 
@@ -82,3 +86,15 @@ DEALLOCATE MY_CURSOR
 ### UNPIVOT
 
 ### Apply
+
+
+### CTE
+``` sql
+;WITH [Foo] AS (
+    SELECT *
+    FROM   [Bar]
+)
+
+SELECT *
+FROM   [Foo]
+```
