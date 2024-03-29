@@ -37,6 +37,20 @@
 * `?=`: 斷言
 * `?:`: 不捕獲
 
+### 重複出現
+
+以 `\1` `\2` 來代表對應的 group 重複出現
+
+index
+```
+<(\w+)><\/\1>
+```
+    
+named (PHP only?)
+```
+<(?<tag>\w+)><\/\g<tag>>
+```
+
 ### 排除 \1 \2
 
 一般使用排除會用 `[^]` 把需要排除的字元放在 `^` 之後\
@@ -44,6 +58,18 @@
 
 [https://stackoverflow.com/questions/18242119/general-approach-for-equivalent-of-backreferences-within-character-class](https://stackoverflow.com/questions/18242119/general-approach-for-equivalent-of-backreferences-within-character-class)
 
+### replace
+- C#
+  <https://docs.microsoft.com/en-us/dotnet/standard/base-types/substitutions-in-regular-expressions>
+- php
+  <https://www.jetbrains.com/help/phpstorm/tutorial-finding-and-replacing-text-using-regular-expressions.html>
+- js
+  <https://developer.mozilla.org/zh-TW/docs/Web/JavaScript/Reference/Global_Objects/String/replace#%E6%8C%87%E5%AE%9A%E4%B8%80%E5%80%8B%E5%AD%97%E4%B8%B2%E7%82%BA%E5%8F%83%E6%95%B8>
+
+輸出
+- index: `$1` `$2`
+- index(old): `\1` `\2` (有些程式語言不支援)
+- named: `${a}` `${b}` (有些程式語言不支援)
 
 ## 實際範例
 
