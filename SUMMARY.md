@@ -125,6 +125,10 @@
 
 * [General](gitbook/general.md)
 
+## AI
+
+* [Midjourney](ai/midjourney.md)
+
 ***
 
 * [Tools](tools/README.md)
