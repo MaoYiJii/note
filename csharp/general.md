@@ -1,5 +1,10 @@
 # General
 
+## C# 歷史
+
+從 [Microsoft Learn](https://learn.microsoft.com/zh-tw/dotnet/csharp/whats-new/csharp-version-history) 查看 C# 歷史
+可以得知每個版本的新功能
+
 ## byte\[] to Stream
 
 ```cs

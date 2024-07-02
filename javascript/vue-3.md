@@ -14,6 +14,28 @@ Mixins --> Composition API
 
 [使用 i18n](https://muki.tw/tech/vue/typescript-vue3-vue-i18n/)
 
+## Router
+
+### 頁面跳轉
+
+``` ts
+import router from '@/router'
+
+router.push({ path: `/` });
+```
+
+## Route
+
+### 解析參數
+
+``` ts
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+
+const foo = route.params.foo as string;
+```
+
 ## Vuex
 
 Vue 與 Vuex 的對應
