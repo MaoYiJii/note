@@ -14,43 +14,43 @@ UrlHelper Url = new UrlHelper(HttpContext.Current.Request.RequestContext);
 
 ### 擷取全站台未處理的 Exception
 
-Global.asax.cs
+#### Global.asax.cs
 
-```cs
-protected void Application_Error(object sender, EventArgs e)
-{
-    Exception exception = Server.GetLastError();
-    if (exception != null)
-    {
-        // TODO: write log
-    }
-}
-```
+- `Global.asax.cs`
+  ```cs
+  protected void Application_Error(object sender, EventArgs e)
+  {
+      Exception exception = Server.GetLastError();
+      if (exception != null)
+      {
+          // TODO: write log
+      }
+  }
+  ```
 
-App\_Start\FilterConfig.cs
+#### FilterConfig + HandleErrorAttribute
 
-```cs
-public static void RegisterGlobalFilters(GlobalFilterCollection filters)
-{
-    filters.Add(new MyHandleErrorAttribute());
-}
-```
-
-MyHandleErrorAttribute.cs
-
-```cs
-public class MyHandleErrorAttribute : HandleErrorAttribute
-{
-    public override void OnException(ExceptionContext filterContext)
-    {
-        //var url = filterContext.HttpContext.Request.Url.AbsoluteUri;
-        var exception = filterContext.Exception;
-        // TODO: write log
-        //filterContext.ExceptionHandled = true;
-        base.OnException(filterContext);
-    }
-}
-```
+- `App\_Start\FilterConfig.cs`
+  ```cs
+  public static void RegisterGlobalFilters(GlobalFilterCollection filters)
+  {
+      filters.Add(new MyHandleErrorAttribute());
+  }
+  ```
+- `MyHandleErrorAttribute.cs`
+  ```cs
+  public class MyHandleErrorAttribute : HandleErrorAttribute
+  {
+      public override void OnException(ExceptionContext filterContext)
+      {
+          //var url = filterContext.HttpContext.Request.Url.AbsoluteUri;
+          var exception = filterContext.Exception;
+          // TODO: write log
+          //filterContext.ExceptionHandled = true;
+          base.OnException(filterContext);
+      }
+  }
+  ```
 
 ### 從 HtmlHelper 取得 UrlHelper
 
@@ -155,4 +155,23 @@ public ActionResult UploadFile(HttpPostedFileBase file)
 }
 ```
 
-[前端參考](broken-reference)
+### 處理 XSS
+
+在以 `@Html.Raw` 來輸出 HTML 內容時，若是可能有 XSS 攻擊的來源
+可以透過 NuGet 套件的 `AntiXSS` 或 `HtmlSanitizer` 來處理
+
+#### AntiXSS
+``` cshtml
+@using Microsoft.Security.Application;
+
+@Sanitizer.GetSafeHtmlFragment(rawHtml)
+```
+
+#### HtmlSanitizer
+``` cshtml
+@{
+    Ganss.XSS.HtmlSanitizer sanitizer = new Ganss.XSS.HtmlSanitizer();
+}
+
+@sanitizer.Sanitize(rawHtml)
+```
