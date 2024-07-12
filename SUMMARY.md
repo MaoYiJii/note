@@ -23,6 +23,7 @@
   * [StackTrace](csharp/.net-framework/stacktrace.md)
   * [Unit Test](csharp/.net-framework/unit-test.md)
   * [AutoMapper](csharp/.net-framework/auto-mapper.md)
+  * [Microsoft.Office.Interop.Excel](csharp/.net-framework/microsoft.office.interop.excel.md)
 * [.NET Core](csharp/.net-core/README.md)
   * [ASP.NET Core](csharp/.net-core/asp.net-core/README.md)
     * [Identity](csharp/.net-core/asp.net-core/identity/README.md)
