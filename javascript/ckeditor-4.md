@@ -147,3 +147,32 @@ $.fn.modal.Constructor.prototype._enforceFocus = function () {
       return Content($"<html><body><script>window.parent.CKEDITOR.tools.callFunction({CKEditorFuncNum}, {JsonSerializer.Serialize(imageUrl)}, {JsonSerializer.Serialize(message)});</script></body></html>", "text/html", Encoding.UTF8);
   }
   ```
+  
+### 在 ASP.NET Web Forms 上使用
+
+- 如果對資安要求沒那麼高，可以在 aspx 的 Page 標籤加上 `ValidateRequest="false"`
+- 如果不能放 `ValidateRequest="false"`
+  可以在 `Page_Load` 逐一對所有 CKEditor 的 `TextBox` 來編碼與解碼
+  ``` cs
+  protected void Page_Load(object sender, EventArgs e)
+  {
+      // 讓 CKEditor 的值在 Post 之前做 HtmlEncode
+      String csname = "OnSubmitScript";
+      Type cstype = this.GetType();
+      ClientScriptManager cs = Page.ClientScript;
+      if (!cs.IsOnSubmitStatementRegistered(cstype, csname))
+      {
+          String cstext = string.Format(@"
+              var cke1 = CKEDITOR.instances['{0}'];
+              cke1.setData($(""<div>"").text(cke1.getData()).html());",
+              TextBox1.ClientID);
+          cs.RegisterOnSubmitStatement(cstype, csname, cstext);
+      }
+
+      // 讓 CKEditor 的值在 Post 之後做 HtmlDecode
+      if (Page.IsPostBack)
+      {
+          TextBox1.Text = HttpUtility.HtmlDecode(HttpUtility.HtmlDecode(HttpUtility.HtmlEncode(TextBox1.Text)));
+      }
+  }
+  ```

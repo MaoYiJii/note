@@ -81,6 +81,7 @@ Console.WriteLine(fooField.GetValue(myObject));
 ```
 
 ## 屬性存取
+
 不使用 `Reflection`
 ``` cs
 // 建立物件
@@ -93,6 +94,7 @@ Console.WriteLine(myObject.Bar);
 
 使用 `Reflection`
 ``` cs
+
 ```
 
 
@@ -107,7 +109,7 @@ Activator.CreateInstance(type);
 
 #### 以 Type 建立泛型物件
 
-以 List\<T> 為例
+以 `List<T>` 為例
 
 ```cs
 Activator.CreateInstance(typeof(List<>).MakeGenericType(resultGenericType)) as IList;
@@ -115,9 +117,9 @@ Activator.CreateInstance(typeof(List<>).MakeGenericType(resultGenericType)) as I
 
 #### 呼叫有 out 參數的方法
 
-以 Enum.TryParse 為例
+以 `Enum.TryParse` 為例
 
-```cs
+``` cs
 var enumParse = typeof(Enum).GetMethods()
     .First(x => x.Name == "TryParse" && x.GetParameters().Length == 2)
     .MakeGenericMethod(new[] { type });
@@ -126,9 +128,18 @@ isParsed = (bool)enumParse.Invoke(null, parameters);
 result = parameters[1];
 ```
 
+### 呼叫多型的方法
+
+根據 `@params` 的參數數量與類型，呼叫對應的多型方法
+``` cs
+var @params = new object[] { p0, p1 };
+var result = typeof(Foo).InvokeMember("Bar", BindingFlags.InvokeMethod, null, foo, @params);
+```
+
+
 #### 從 Expression 取得 PropertyName
 
-```cs
+``` cs
 public string GetPropertyName<T>(Expression<Func<T, object>> expression)
 {
     if (expression.Body is MemberExpression memberExpression)
@@ -146,7 +157,7 @@ public string GetPropertyName<T>(Expression<Func<T, object>> expression)
 
 #### 以 explicit 轉換類型
 
-```cs
+``` cs
 // 如果沒有對應的 explicit 會擲回 InvalidOperationException
 var explicitMethod = Expression.Convert(Expression.Parameter(value.GetType(), null), type).Method;
 return explicitMethod.Invoke(null, new object[] { value });

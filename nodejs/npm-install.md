@@ -1,5 +1,11 @@
 # npm install
 
+### 編輯 `package.json` 後重新安裝
+
+1. 編輯 `package.json` (新增或移除套件)
+2. 執行 `npm install --package-lock-only` (讓 `package-lock.json` 與 `package.json` 內容同步)
+3. 執行 `npm ci`
+
 ### 錯誤處理
 
 1.  #### 錯誤訊息
