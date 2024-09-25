@@ -89,6 +89,7 @@
 ## SQL
 
 * [General](sql/general.md)
+* [Reflection](sql/reflection.md)
 * [SQL Server Integration Services (SSIS)](sql/ssis.md)
 
 ## NodeJS
