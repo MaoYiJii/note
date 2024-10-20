@@ -39,6 +39,7 @@
     * [Entity Framework Core](csharp/.net-core/asp.net-core/entity-framework-core.md)
     * [Razor Pages](csharp/.net-core/asp.net-core/razor-pages.md)
     * [Blazor](csharp/.net-core/asp.net-core/blazor.md)
+    * [SignalR](csharp/.net-core/asp.net-core/signal-r.md)
     * [AspectCore](csharp/.net-core/asp.net-core/aspectcore.md)
   * [CodeAnalysis](csharp/.net-core/codeanalysis.md)
   * [System.Text.Json](csharp/.net-core/system.text.json.md)
@@ -81,6 +82,7 @@
     * [BTable](javascript/vue-2/bootstrapvue/btable.md)
   * [PortalVue 3](javascript/vue-2/portalvue-3.md)
 * [Vue 3](javascript/vue-3.md)
+* [YouTube](javascript/youtube.md)
 
 ## Css
 
@@ -121,6 +123,10 @@
 
 * [General](visual-studio-code/general.md)
 
+## Flutter
+
+* [General](flutter/general.md)
+
 ## Git
 
 * [General](git/general.md)
@@ -136,7 +142,9 @@
 
 ## AI
 
+* [DALL·E3](ai/dall-e3.md)
 * [Midjourney](ai/midjourney.md)
+* [Adobe Firefly](ai/adobe-firefly.md)
 
 ***
 
